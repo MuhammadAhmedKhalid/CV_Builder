@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="CVBuilder.Common/CVBuilder.Common.csproj" />
+  <Project Path="CVBuilder.Contracts/CVBuilder.Contracts.csproj" />
+  <Project Path="CVBuilder.Migrations/CVBuilder.Migrations.csproj" />
+  <Project Path="CVBuilder.Server/CVBuilder.Server.csproj" />
+  <Project Path="CVBuilder.Worker/CVBuilder.Worker.csproj" />
+</Solution>

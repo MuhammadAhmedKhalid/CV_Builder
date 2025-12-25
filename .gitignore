@@ -1,0 +1,15 @@
+# Node
+client/node_modules
+client/.next
+client/.env.local
+
+# .NET
+csharp/**/bin/
+csharp/**/obj/
+csharp/*.user
+csharp/*.vs
+csharp/*.suo
+
+# General
+.DS_Store
+.env
