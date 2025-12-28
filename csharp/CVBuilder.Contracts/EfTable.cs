@@ -1,8 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CVBuilder.Contracts
 {
@@ -15,6 +11,7 @@ namespace CVBuilder.Contracts
             _dbContext = dbContext;
         }
 
+        // Create a new item
         public async Task<EfItem<T>> CreateItemAsync(T item)
         {
             if (string.IsNullOrEmpty(item.Id))
@@ -34,10 +31,13 @@ namespace CVBuilder.Contracts
             }
             catch (Exception ex)
             {
-                throw new DbUpdateException("Error creating item in the database", ex);
+                var innerException = ex.InnerException?.Message ?? ex.Message;
+                Console.WriteLine($"Database error creating item: {innerException}");
+                throw new DbUpdateException($"Error creating item in the database: {innerException}", ex);
             }
         }
 
+        // Replace an existing item
         public async Task<EfItem<T>> ReplaceItemAsync(T item)
         {
             if (string.IsNullOrEmpty(item.Id))
@@ -59,6 +59,7 @@ namespace CVBuilder.Contracts
             }
         }
 
+        // Delete an item by id
         public async Task DeleteItemAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -79,19 +80,30 @@ namespace CVBuilder.Contracts
             }
         }
 
+        // Get single item by id
         public async Task<EfItem<T>> GetItemAsync(string id)
         {
             return await _dbContext.Set<EfItem<T>>().FindAsync(id);
         }
 
-        public async Task<EfItem<T>> GetItemOrDefaultAsync(string id)
+        // Get single item by id, return null if not found
+        public async Task<EfItem<T>?> GetItemOrDefaultAsync(string id)
         {
             return await _dbContext.Set<EfItem<T>>().FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        // Get all items
         public async Task<List<EfItem<T>>> GetItemsAsync()
         {
             return await _dbContext.Set<EfItem<T>>().ToListAsync();
+        }
+
+        // Get single item by predicate (strongly typed)
+        public async Task<T?> GetItemOrDefaultAsync(Func<T, bool> predicate)
+        {
+            return _dbContext.Set<EfItem<T>>()
+                             .Select(e => e.Content)
+                             .FirstOrDefault(predicate);
         }
     }
 }
