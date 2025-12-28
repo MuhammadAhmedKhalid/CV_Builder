@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-DotNetEnv.Env.Load("../../.env");
+DotNetEnv.Env.Load("../.env");
 
 var builder = WebApplication.CreateBuilder(args);
 
