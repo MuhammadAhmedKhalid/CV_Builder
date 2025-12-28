@@ -1,12 +1,22 @@
 // pages/login.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
+import { isLoggedIn } from "@/utils/auth";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  // Redirect to home if already logged in
+  useEffect(() => {
+    if (isLoggedIn()) {
+      router.replace("/");
+    }
+  }, [router]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
@@ -24,8 +34,7 @@ export default function LoginPage() {
             console.log("JWT:", token);
             console.log("User info:", user);
             setError(null);
-            // Redirect to dashboard or home page
-            window.location.href = "/";
+            router.replace("/"); // Redirect after login
           }}
           onLoginError={(errorMsg) => {
             setError(`Login failed: ${errorMsg}`);
