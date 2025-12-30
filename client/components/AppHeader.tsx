@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef, CSSProperties } from "react";
+import { useState, useEffect, useRef, CSSProperties } from "react";
 import { isLoggedIn, logout, getUser } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 
-// --- Inline Styles ---
+// Inline styles
 const styles: { [key: string]: CSSProperties } = {
   header: {
     display: "flex",
@@ -72,7 +72,7 @@ const styles: { [key: string]: CSSProperties } = {
   },
 };
 
-// --- Inline Sub-components ---
+// Inline sub-components
 const Logo = ({ onClick }: { onClick: () => void }) => (
   <h1
     style={styles.logo}
@@ -82,30 +82,6 @@ const Logo = ({ onClick }: { onClick: () => void }) => (
   >
     CV Builder
   </h1>
-);
-
-const LoginButton = ({ onClick }: { onClick: () => void }) => (
-  <button
-    style={styles.loginButton}
-    onClick={onClick}
-    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#059669")}
-    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#10b981")}
-  >
-    Login
-  </button>
-);
-
-const Dropdown = ({ onLogout }: { onLogout: () => void }) => (
-  <div style={styles.dropdown}>
-    <button
-      style={styles.dropdownItem}
-      onClick={onLogout}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#d1fae5")}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-    >
-      Logout
-    </button>
-  </div>
 );
 
 const Avatar = ({
@@ -127,13 +103,40 @@ const Avatar = ({
   />
 );
 
-// --- Header Component ---
-const AppHeader = () => {
+const LoginButton = ({ onClick }: { onClick: () => void }) => (
+  <button
+    style={styles.loginButton}
+    onClick={onClick}
+    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#059669")}
+    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#10b981")}
+  >
+    Login
+  </button>
+);
+
+const Dropdown = ({
+  onLogout,
+}: {
+  onLogout: () => void;
+}) => (
+  <div style={styles.dropdown}>
+    <button
+      style={styles.dropdownItem}
+      onClick={onLogout}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#d1fae5")}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+    >
+      Logout
+    </button>
+  </div>
+);
+
+export default function AppHeader() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState<{ name: string; picture: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
@@ -161,6 +164,7 @@ const AppHeader = () => {
   return (
     <header style={styles.header}>
       <Logo onClick={() => router.push("/")} />
+
       <div style={styles.userSection}>
         {loggedIn && user ? (
           <div ref={dropdownRef}>
@@ -176,27 +180,5 @@ const AppHeader = () => {
         )}
       </div>
     </header>
-  );
-};
-
-// --- Home Page ---
-export default function HomePage() {
-  return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* Use the new header */}
-      <AppHeader />
-
-      {/* Page content */}
-      <main
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <h2 style={{ fontSize: "2rem", color: "#047857" }}>Welcome to CV Builder</h2>
-      </main>
-    </div>
   );
 }

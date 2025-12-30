@@ -1,46 +1,42 @@
-// pages/login.tsx
 "use client";
 
+import AppHeader from "@/components/AppHeader";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
-import { isLoggedIn } from "@/utils/auth";
+import { isLoggedIn, setUser } from "@/utils/auth";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   // Redirect to home if already logged in
   useEffect(() => {
-    if (isLoggedIn()) {
-      router.replace("/");
-    }
+    if (isLoggedIn()) router.replace("/");
   }, [router]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">Login</h1>
-        
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
-            {error}
-          </div>
-        )}
+    <div>
+      <AppHeader />
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] bg-gray-50">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+          <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">Login</h1>
 
-        <GoogleLoginButton
-          onLoginSuccess={(token, user) => {
-            console.log("JWT:", token);
-            console.log("User info:", user);
-            setError(null);
-            router.replace("/"); // Redirect after login
-          }}
-          onLoginError={(errorMsg) => {
-            setError(`Login failed: ${errorMsg}`);
-            setLoading(false);
-          }}
-        />
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+              {error}
+            </div>
+          )}
+
+          <GoogleLoginButton
+            onLoginSuccess={(token, user) => {
+              setUser({ name: user.name, picture: user.picture });
+              setError(null);
+              router.replace("/"); // Redirect after login
+            }}
+            onLoginError={(errMsg) => setError(`Login failed: ${errMsg}`)}
+          />
+        </div>
       </div>
     </div>
   );
