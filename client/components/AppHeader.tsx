@@ -109,10 +109,10 @@ const Logo = ({ onClick }: { onClick: () => void }) => (
     <Image
       src="/images/cv_builder_logo.png"
       alt="CV Builder"
-      width={140}
-      height={40}
+      width={100}
+      height={30}
       priority
-      style={{ height: "auto", width: "auto", maxWidth: "140px" }}
+      style={{ height: "auto", width: "auto", maxWidth: "100px" }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLImageElement).style.opacity = "0.85";
       }}
