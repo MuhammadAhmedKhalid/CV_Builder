@@ -1,6 +1,7 @@
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import "@/styles/globals.css";
+import { IMAGES } from "@/lib/paths";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -11,7 +12,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         {/* Tab icon / favicon */}
         <link
           rel="icon"
-          href="/images/cv_builder_icon.png"
+          href={IMAGES.ICON}
           type="image/png"
         />
 

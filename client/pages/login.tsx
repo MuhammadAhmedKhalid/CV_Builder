@@ -6,13 +6,14 @@ import { useRouter } from "next/navigation";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
 import { isLoggedIn, setUser } from "@/utils/auth";
 import * as COLORS from "@/lib/colors";
+import { ROUTES } from "@/lib/paths";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoggedIn()) router.replace("/");
+    if (isLoggedIn()) router.replace(ROUTES.HOME);
   }, [router]);
 
   return (
@@ -36,7 +37,7 @@ export default function LoginPage() {
             onLoginSuccess={(token, user) => {
               setUser({ name: user.name, picture: user.picture });
               setError(null);
-              router.replace("/");
+              router.replace(ROUTES.HOME);
             }}
             onLoginError={(errMsg) =>
               setError(`Login failed: ${errMsg}`)

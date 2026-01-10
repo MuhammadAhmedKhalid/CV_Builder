@@ -5,6 +5,7 @@ import Image from "next/image";
 import { isLoggedIn, logout, getUser } from "@/utils/auth";
 import { useRouter, usePathname } from "next/navigation";
 import * as Colors from "@/lib/colors";
+import { IMAGES, ROUTES } from "@/lib/paths";
 
 // Inline styles
 const styles: { [key: string]: CSSProperties } = {
@@ -107,7 +108,7 @@ const styles: { [key: string]: CSSProperties } = {
 const Logo = ({ onClick }: { onClick: () => void }) => (
   <div onClick={onClick} style={styles.logoContainer}>
     <Image
-      src="/images/cv_builder_logo.png"
+      src={IMAGES.LOGO}
       alt="CV Builder"
       width={100}
       height={30}
@@ -148,7 +149,7 @@ const Avatar = ({
         style={{ display: "block", objectFit: "cover", cursor: "pointer" }}
         onClick={onClick}
         onError={() => {
-          setImgSrc("/images/pfp_avatar.png");
+          setImgSrc(IMAGES.DEFAULT_AVATAR);
         }}
       />
     </div>
@@ -211,12 +212,12 @@ export default function AppHeader() {
     setLoggedIn(false);
     setUser(null);
     setDropdownOpen(false);
-    router.replace("/login");
+    router.replace(ROUTES.LOGIN);
   };
 
   return (
     <header style={styles.header}>
-      <Logo onClick={() => router.push("/")} />
+      <Logo onClick={() => router.push(ROUTES.HOME)} />
 
       <div style={styles.userSection}>
         {loggedIn && user ? (
@@ -229,8 +230,8 @@ export default function AppHeader() {
             {dropdownOpen && <Dropdown onLogout={handleLogout} />}
           </div>
         ) : (
-          pathname !== "/login" && (
-            <LoginButton onClick={() => router.push("/login")} />
+          pathname !== ROUTES.LOGIN && (
+            <LoginButton onClick={() => router.push(ROUTES.LOGIN)} />
           )
         )}
       </div>
