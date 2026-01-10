@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, CSSProperties } from "react";
+import Image from "next/image";
 import { isLoggedIn, logout, getUser } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 
@@ -23,6 +24,10 @@ const styles: { [key: string]: CSSProperties } = {
     color: "#047857",
     cursor: "pointer",
     transition: "color 0.2s ease",
+  },
+  logoImage: {
+    cursor: "pointer",
+    display: "block",
   },
   userSection: {
     display: "flex",
@@ -74,14 +79,22 @@ const styles: { [key: string]: CSSProperties } = {
 
 // Inline sub-components
 const Logo = ({ onClick }: { onClick: () => void }) => (
-  <h1
-    style={styles.logo}
-    onClick={onClick}
-    onMouseEnter={(e) => (e.currentTarget.style.color = "#065f46")}
-    onMouseLeave={(e) => (e.currentTarget.style.color = "#047857")}
-  >
-    CV Builder
-  </h1>
+  <div onClick={onClick} style={{ display: "flex", alignItems: "center", cursor: "pointer", height: "44px" }}>
+    <Image
+      src="/images/cv_builder_logo.png"
+      alt="CV Builder"
+      width={140}
+      height={40}
+      priority
+      style={{ height: "auto", width: "auto", maxWidth: "140px" }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLImageElement).style.opacity = "0.85";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLImageElement).style.opacity = "1";
+      }}
+    />
+  </div>
 );
 
 const Avatar = ({
@@ -92,16 +105,29 @@ const Avatar = ({
   src: string;
   alt: string;
   onClick: () => void;
-}) => (
-  <img
-    src={src}
-    alt={alt}
-    style={styles.avatar}
-    onClick={onClick}
-    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-  />
-);
+}) => {
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  return (
+    <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", border: "2px solid #10b981", display: "inline-block" }}>
+      <Image
+        src={imgSrc}
+        alt={alt}
+        width={44}
+        height={44}
+        style={{ display: "block", objectFit: "cover", cursor: "pointer" }}
+        onClick={onClick}
+        onError={() => {
+          setImgSrc("/images/pfp_avatar.png");
+        }}
+      />
+    </div>
+  );
+};
 
 const LoginButton = ({ onClick }: { onClick: () => void }) => (
   <button
