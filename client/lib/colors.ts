@@ -17,3 +17,7 @@ export const SHADOW_MEDIUM = "rgba(0,0,0,0.1)";
 
 // Borders
 export const BORDER_PRIMARY = "#10b981";
+
+// Feedback
+export const ERROR_BG = "#fef2f2";
+export const ERROR_TEXT = "#991b1b";

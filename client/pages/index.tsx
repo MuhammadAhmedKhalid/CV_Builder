@@ -6,11 +6,16 @@ import * as Colors from "@/lib/colors";
 // --- Home Page ---
 export default function HomePage() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* Use the centralized header component */}
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: Colors.LIGHT_GRAY,
+      }}
+    >
       <AppHeader />
 
-      {/* Page content */}
       <main
         style={{
           flex: 1,
@@ -19,7 +24,9 @@ export default function HomePage() {
           justifyContent: "center",
         }}
       >
-        <h2 style={{ fontSize: "2rem", color: Colors.PRIMARY }}>Welcome to CV Builder</h2>
+        <h2 style={{ fontSize: "2rem", color: Colors.PRIMARY }}>
+          Welcome to CV Builder
+        </h2>
       </main>
     </div>
   );

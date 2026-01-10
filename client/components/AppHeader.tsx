@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, CSSProperties } from "react";
 import Image from "next/image";
 import { isLoggedIn, logout, getUser } from "@/utils/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import * as Colors from "@/lib/colors";
 
 // Inline styles
@@ -188,6 +188,7 @@ export default function AppHeader() {
   const [user, setUser] = useState<{ name: string; picture: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -228,7 +229,9 @@ export default function AppHeader() {
             {dropdownOpen && <Dropdown onLogout={handleLogout} />}
           </div>
         ) : (
-          <LoginButton onClick={() => router.push("/login")} />
+          pathname !== "/login" && (
+            <LoginButton onClick={() => router.push("/login")} />
+          )
         )}
       </div>
     </header>
