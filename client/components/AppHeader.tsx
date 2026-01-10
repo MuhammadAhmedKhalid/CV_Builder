@@ -13,10 +13,15 @@ const styles: { [key: string]: CSSProperties } = {
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: Colors.WHITE,
-    padding: "1rem 2rem",
+    padding: "0.75rem 1.5rem",
     boxShadow: `0 4px 10px ${Colors.SHADOW_LIGHT}`,
     position: "sticky",
     top: 0,
+    left: 0,
+    right: 0,
+    width: "100%",
+    boxSizing: "border-box",
+    margin: 0,
     zIndex: 50,
   },
   logo: {
@@ -33,6 +38,7 @@ const styles: { [key: string]: CSSProperties } = {
   userSection: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     position: "relative",
   },
   avatar: {
@@ -42,6 +48,9 @@ const styles: { [key: string]: CSSProperties } = {
     cursor: "pointer",
     border: `2px solid ${Colors.PRIMARY_LIGHT}`,
     transition: "transform 0.2s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   loginButton: {
     padding: "0.5rem 1.2rem",
@@ -76,11 +85,27 @@ const styles: { [key: string]: CSSProperties } = {
     color: Colors.PRIMARY,
     transition: "background-color 0.2s ease",
   },
+  logoContainer: {
+    display: "flex",
+    alignItems: "center",
+    cursor: "pointer",
+    height: "44px",
+  },
+  avatarContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: "50%",
+    overflow: "hidden",
+    border: `2px solid ${Colors.PRIMARY_LIGHT}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 };
 
 // Inline sub-components
 const Logo = ({ onClick }: { onClick: () => void }) => (
-  <div onClick={onClick} style={{ display: "flex", alignItems: "center", cursor: "pointer", height: "44px" }}>
+  <div onClick={onClick} style={styles.logoContainer}>
     <Image
       src="/images/cv_builder_logo.png"
       alt="CV Builder"
@@ -114,7 +139,7 @@ const Avatar = ({
   }, [src]);
 
   return (
-    <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", border: `2px solid ${Colors.PRIMARY_LIGHT}`, display: "inline-block" }}>
+    <div style={styles.avatarContainer}>
       <Image
         src={imgSrc}
         alt={alt}
