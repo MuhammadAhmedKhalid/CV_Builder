@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, CSSProperties } from "react";
 import Image from "next/image";
 import { isLoggedIn, logout, getUser } from "@/utils/auth";
 import { useRouter } from "next/navigation";
+import * as Colors from "@/lib/colors";
 
 // Inline styles
 const styles: { [key: string]: CSSProperties } = {
@@ -11,9 +12,9 @@ const styles: { [key: string]: CSSProperties } = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#ffffff",
+    backgroundColor: Colors.WHITE,
     padding: "1rem 2rem",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+    boxShadow: `0 4px 10px ${Colors.SHADOW_LIGHT}`,
     position: "sticky",
     top: 0,
     zIndex: 50,
@@ -21,7 +22,7 @@ const styles: { [key: string]: CSSProperties } = {
   logo: {
     fontSize: "1.8rem",
     fontWeight: 700,
-    color: "#047857",
+    color: Colors.PRIMARY,
     cursor: "pointer",
     transition: "color 0.2s ease",
   },
@@ -39,13 +40,13 @@ const styles: { [key: string]: CSSProperties } = {
     height: "44px",
     borderRadius: "50%",
     cursor: "pointer",
-    border: "2px solid #10b981",
+    border: `2px solid ${Colors.PRIMARY_LIGHT}`,
     transition: "transform 0.2s ease",
   },
   loginButton: {
     padding: "0.5rem 1.2rem",
-    backgroundColor: "#10b981",
-    color: "white",
+    backgroundColor: Colors.PRIMARY_LIGHT,
+    color: Colors.WHITE,
     fontWeight: 500,
     border: "none",
     borderRadius: "8px",
@@ -56,11 +57,11 @@ const styles: { [key: string]: CSSProperties } = {
     position: "absolute",
     right: 0,
     top: "50px",
-    backgroundColor: "#f0fdf4",
-    border: "1px solid #10b981",
+    backgroundColor: Colors.LIGHT_GRAY,
+    border: `1px solid ${Colors.PRIMARY_LIGHT}`,
     borderRadius: "10px",
     width: "160px",
-    boxShadow: "0 6px 12px rgba(0,0,0,0.1)",
+    boxShadow: `0 6px 12px ${Colors.SHADOW_MEDIUM}`,
     padding: "0.5rem 0",
     zIndex: 100,
   },
@@ -72,7 +73,7 @@ const styles: { [key: string]: CSSProperties } = {
     border: "none",
     cursor: "pointer",
     fontWeight: 500,
-    color: "#047857",
+    color: Colors.PRIMARY,
     transition: "background-color 0.2s ease",
   },
 };
@@ -113,7 +114,7 @@ const Avatar = ({
   }, [src]);
 
   return (
-    <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", border: "2px solid #10b981", display: "inline-block" }}>
+    <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", border: `2px solid ${Colors.PRIMARY_LIGHT}`, display: "inline-block" }}>
       <Image
         src={imgSrc}
         alt={alt}
@@ -133,8 +134,8 @@ const LoginButton = ({ onClick }: { onClick: () => void }) => (
   <button
     style={styles.loginButton}
     onClick={onClick}
-    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#059669")}
-    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#10b981")}
+    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = Colors.PRIMARY_LIGHTER)}
+    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = Colors.PRIMARY_LIGHT)}
   >
     Login
   </button>
@@ -149,7 +150,7 @@ const Dropdown = ({
     <button
       style={styles.dropdownItem}
       onClick={onLogout}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#d1fae5")}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = Colors.SECONDARY)}
       onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
     >
       Logout

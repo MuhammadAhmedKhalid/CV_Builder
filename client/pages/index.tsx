@@ -1,6 +1,7 @@
 "use client";
 
 import AppHeader from "@/components/AppHeader";
+import * as Colors from "@/lib/colors";
 
 // --- Home Page ---
 export default function HomePage() {
@@ -18,7 +19,7 @@ export default function HomePage() {
           justifyContent: "center",
         }}
       >
-        <h2 style={{ fontSize: "2rem", color: "#047857" }}>Welcome to CV Builder</h2>
+        <h2 style={{ fontSize: "2rem", color: Colors.PRIMARY }}>Welcome to CV Builder</h2>
       </main>
     </div>
   );
