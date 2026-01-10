@@ -66,25 +66,27 @@ const styles: { [key: string]: CSSProperties } = {
   dropdown: {
     position: "absolute",
     right: 0,
-    top: "50px",
-    backgroundColor: Colors.LIGHT_GRAY,
-    border: `1px solid ${Colors.PRIMARY_LIGHT}`,
-    borderRadius: "10px",
-    width: "160px",
-    boxShadow: `0 6px 12px ${Colors.SHADOW_MEDIUM}`,
-    padding: "0.5rem 0",
+    top: "56px",
+    backgroundColor: Colors.WHITE,
+    border: `1px solid ${Colors.BORDER_PRIMARY}`,
+    borderRadius: "12px",
+    width: "180px",
+    boxShadow: `0 12px 24px ${Colors.SHADOW_MEDIUM}`,
+    padding: "0.4rem",
     zIndex: 100,
   },
   dropdownItem: {
     width: "100%",
-    padding: "0.5rem 1rem",
+    padding: "0.65rem 0.75rem",
     textAlign: "left",
     background: "transparent",
     border: "none",
     cursor: "pointer",
     fontWeight: 500,
-    color: Colors.PRIMARY,
-    transition: "background-color 0.2s ease",
+    fontSize: "14px",
+    color: Colors.PRIMARY_DARK,
+    borderRadius: "8px",
+    transition: "background-color 0.2s ease, color 0.2s ease",
   },
   logoContainer: {
     display: "flex",
@@ -169,15 +171,48 @@ const LoginButton = ({ onClick }: { onClick: () => void }) => (
 
 const Dropdown = ({
   onLogout,
+  onSettings,
 }: {
   onLogout: () => void;
+  onSettings: () => void;
 }) => (
   <div style={styles.dropdown}>
     <button
       style={styles.dropdownItem}
+      onClick={onSettings}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = Colors.SECONDARY;
+        e.currentTarget.style.color = Colors.PRIMARY;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "transparent";
+        e.currentTarget.style.color = Colors.PRIMARY_DARK;
+      }}
+    >
+      Settings
+    </button>
+
+    {/* Divider */}
+    <div
+      style={{
+        height: "1px",
+        backgroundColor: Colors.BORDER_PRIMARY,
+        margin: "4px 0",
+        opacity: 0.6,
+      }}
+    />
+
+    <button
+      style={styles.dropdownItem}
       onClick={onLogout}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = Colors.SECONDARY)}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = Colors.SECONDARY;
+        e.currentTarget.style.color = Colors.PRIMARY;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "transparent";
+        e.currentTarget.style.color = Colors.PRIMARY_DARK;
+      }}
     >
       Logout
     </button>
@@ -227,7 +262,15 @@ export default function AppHeader() {
               alt={user.name}
               onClick={() => setDropdownOpen(!dropdownOpen)}
             />
-            {dropdownOpen && <Dropdown onLogout={handleLogout} />}
+            {dropdownOpen && (
+              <Dropdown
+                onLogout={handleLogout}
+                onSettings={() => {
+                  setDropdownOpen(false);
+                  router.push(ROUTES.SETTINGS);
+                }}
+              />
+            )}
           </div>
         ) : (
           pathname !== ROUTES.LOGIN && (

@@ -11,4 +11,5 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   CV_EDITOR: "/cv-editor",
+  SETTINGS: "/settings",
 };
