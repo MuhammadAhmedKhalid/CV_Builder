@@ -21,3 +21,7 @@ export const BORDER_PRIMARY = "#10b981";
 // Feedback
 export const ERROR_BG = "#fef2f2";
 export const ERROR_TEXT = "#991b1b";
+
+// Overlay / modal
+export const OVERLAY = "rgba(0,0,0,0.35)";
+export const MODAL_SHADOW = "rgba(0,0,0,0.15)";

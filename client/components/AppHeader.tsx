@@ -6,6 +6,7 @@ import { isLoggedIn, logout, getUser } from "@/utils/auth";
 import { useRouter, usePathname } from "next/navigation";
 import * as Colors from "@/lib/colors";
 import { IMAGES, ROUTES } from "@/lib/paths";
+import ConfirmModal from "@/components/ConfirmModal";
 
 // Inline styles
 const styles: { [key: string]: CSSProperties } = {
@@ -226,6 +227,7 @@ export default function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
@@ -264,7 +266,7 @@ export default function AppHeader() {
             />
             {dropdownOpen && (
               <Dropdown
-                onLogout={handleLogout}
+                onLogout={() => setShowLogoutConfirm(true)}
                 onSettings={() => {
                   setDropdownOpen(false);
                   router.push(ROUTES.SETTINGS);
@@ -278,6 +280,18 @@ export default function AppHeader() {
           )
         )}
       </div>
+      <ConfirmModal
+        open={showLogoutConfirm}
+        title="Logout"
+        description="Are you sure you want to logout from your account?"
+        confirmText="Logout"
+        cancelText="Cancel"
+        onCancel={() => setShowLogoutConfirm(false)}
+        onConfirm={() => {
+          setShowLogoutConfirm(false);
+          handleLogout();
+        }}
+      />
     </header>
   );
 }
