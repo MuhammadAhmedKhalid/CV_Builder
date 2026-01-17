@@ -4,6 +4,7 @@ import AppHeader from "@/components/AppHeader";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
+import EmailLoginButton from "@/components/EmailLoginButton";
 import { isLoggedIn, setUser } from "@/utils/auth";
 import * as COLORS from "@/lib/colors";
 import { ROUTES } from "@/lib/paths";
@@ -34,6 +35,23 @@ export default function LoginPage() {
           )}
 
           <GoogleLoginButton
+            onLoginSuccess={(token, user) => {
+              setUser({ name: user.name, picture: user.picture });
+              setError(null);
+              router.replace(ROUTES.HOME);
+            }}
+            onLoginError={(errMsg) =>
+              setError(`Login failed: ${errMsg}`)
+            }
+          />
+
+          <div style={styles.dividerContainer}>
+            <div style={styles.dividerLine}></div>
+            <span style={styles.dividerText}>OR</span>
+            <div style={styles.dividerLine}></div>
+          </div>
+
+          <EmailLoginButton
             onLoginSuccess={(token, user) => {
               setUser({ name: user.name, picture: user.picture });
               setError(null);
@@ -97,5 +115,25 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: "8px",
     fontSize: "13px",
     border: `1px solid ${COLORS.BORDER_PRIMARY}`,
+  },
+
+  dividerContainer: {
+    display: "flex",
+    alignItems: "center",
+    margin: "16px 0",
+    gap: "12px",
+  },
+
+  dividerLine: {
+    flex: 1,
+    height: "1px",
+    backgroundColor: COLORS.BORDER_PRIMARY,
+  },
+
+  dividerText: {
+    fontSize: "12px",
+    color: COLORS.PRIMARY,
+    fontWeight: "500",
+    padding: "0 8px",
   },
 };
