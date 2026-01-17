@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
-using CVBuilder.Contracts;
+using CVBuilder.Contracts.Auth;
+using CVBuilder.Server.Auth;
 using Npgsql;
 
 // Load environment variables from .env file
@@ -32,7 +33,8 @@ builder.Services.AddLogging();
 builder.Services.AddControllers();
 
 // Add DbContext with PostgreSQL
-var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+var dbConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
+                        Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 Console.WriteLine($"Database connection string configured: {!string.IsNullOrEmpty(dbConnectionString)}");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -41,12 +43,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         b => b.MigrationsAssembly("CVBuilder.Migrations")
     ));
 
+// Register OAuth services
+builder.Services.AddSingleton<IOAuthProviderFactory, OAuthProviderFactory>();
+builder.Services.AddSingleton<JwtService>();
+builder.Services.AddScoped<AuthenticationService>();
+
 // Enable CORS for frontend
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(builder.Configuration["Application:FrontendUrl"])
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

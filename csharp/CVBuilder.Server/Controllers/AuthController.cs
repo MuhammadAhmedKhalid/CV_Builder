@@ -1,4 +1,5 @@
-﻿using CVBuilder.Contracts;           
+﻿using CVBuilder.Contracts;
+using CVBuilder.Contracts.Auth;
 using CVBuilder.Server.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,84 +9,95 @@ namespace CVBuilder.Server.Controllers;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    private readonly GoogleTokenValidator _googleValidator;
-    private readonly JwtService _jwtService;
+    private readonly AuthenticationService _authService;
+    private readonly IOAuthProviderFactory _providerFactory;
 
-    public AuthController(AppDbContext db, IConfiguration config)
+    public AuthController(AuthenticationService authService, IOAuthProviderFactory providerFactory)
     {
-        _db = db;
-        var googleClientId = config["GOOGLE_CLIENT_ID"] ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
-        if (string.IsNullOrEmpty(googleClientId))
-        {
-            throw new InvalidOperationException("GOOGLE_CLIENT_ID is not configured");
-        }
-        _googleValidator = new GoogleTokenValidator(googleClientId);
-        _jwtService = new JwtService(config);
+        _authService = authService;
+        _providerFactory = providerFactory;
     }
 
     /// <summary>
-    /// Login with Google ID token
+    /// Login with OAuth provider token
     /// </summary>
-    [HttpPost("google")]
-    public async Task<IActionResult> LoginWithGoogle([FromBody] GoogleLoginRequest request)
+    [HttpPost("{provider}")]
+    public async Task<IActionResult> LoginWithProvider(string provider, [FromBody] OAuthLoginRequest request)
     {
-        if (string.IsNullOrEmpty(request.IdToken))
-            return BadRequest(new { error = "IdToken is required" });
+        if (string.IsNullOrEmpty(request.Token))
+            return BadRequest(new { error = "Token is required" });
 
         try
         {
-            // 1️ Validate Google ID token
-            var payload = await _googleValidator.ValidateAsync(request.IdToken);
-
-            // 2️ Upsert user in database
-            var efTable = new EfTable<User>(_db);
-            var user = await efTable.GetItemOrDefaultAsync(u => u.GoogleId == payload.Subject);
-
-            if (user == null)
+            // Parse provider type
+            if (!Enum.TryParse<OAuthProviderType>(provider, true, out var providerType))
             {
-                user = new User
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = Guid.NewGuid().ToString(),
-                    Email = payload.Email!,
-                    Name = payload.Name!,
-                    Picture = payload.Picture ?? "",
-                    GoogleId = payload.Subject,
-                    CreatedAt = DateTime.UtcNow,
-                    LastLoginAt = DateTime.UtcNow
-                };
-                await efTable.CreateItemAsync(user);
-            }
-            else
-            {
-                user.LastLoginAt = DateTime.UtcNow;
-                await efTable.ReplaceItemAsync(user);
+                return BadRequest(new { error = $"Unsupported provider: {provider}" });
             }
 
-            // 3️ Generate JWT token
-            var token = _jwtService.GenerateToken(user.Id, user.Email, user.Name);
+            // Check if provider is available
+            if (!_providerFactory.IsProviderAvailable(providerType))
+            {
+                return BadRequest(new { error = $"Provider {provider} is not configured" });
+            }
 
-            // 4️ Convert DB user to API contract
-            var userContract = user.ToContract();
+            // Authenticate user
+            var result = await _authService.AuthenticateAsync(providerType, request.Token);
 
-            // 5️ Return token and user
-            return Ok(new { token, user = userContract });
+            return Ok(new { token = result.Token, user = result.User });
         }
         catch (Exception ex)
         {
-            // Log the error server-side for debugging
             var innerError = ex.InnerException?.Message ?? ex.Message;
-            Console.WriteLine($"Google login error: {innerError}");
+            Console.WriteLine($"OAuth login error: {innerError}");
 
-            // Return JSON error to frontend
             return StatusCode(500, new { error = innerError, type = ex.GetType().Name });
         }
     }
 
+    /// <summary>
+    /// Get available OAuth providers
+    /// </summary>
+    [HttpGet("providers")]
+    public IActionResult GetAvailableProviders()
+    {
+        var providers = _providerFactory.GetAvailableProviders()
+            .Select(p => new { name = p.ToString(), displayName = _providerFactory.GetProvider(p).Name });
+
+        return Ok(providers);
+    }
+
+    /// <summary>
+    /// Get authorization URL for OAuth flow
+    /// </summary>
+    [HttpGet("{provider}/authorize")]
+    public IActionResult GetAuthorizationUrl(string provider, [FromQuery] string redirectUri, [FromQuery] string state, [FromQuery] string[] scopes)
+    {
+        try
+        {
+            if (!Enum.TryParse<OAuthProviderType>(provider, true, out var providerType))
+            {
+                return BadRequest(new { error = $"Unsupported provider: {provider}" });
+            }
+
+            if (!_providerFactory.IsProviderAvailable(providerType))
+            {
+                return BadRequest(new { error = $"Provider {provider} is not configured" });
+            }
+
+            var providerInstance = _providerFactory.GetProvider(providerType);
+            var authUrl = providerInstance.GetAuthorizationUrl(state, redirectUri, scopes ?? Array.Empty<string>());
+
+            return Ok(new { authorizationUrl = authUrl });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }
 
 /// <summary>
-/// Request body for Google login
+/// Request body for OAuth login
 /// </summary>
-public record GoogleLoginRequest(string IdToken);
+public record OAuthLoginRequest(string Token);

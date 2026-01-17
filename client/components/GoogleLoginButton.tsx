@@ -43,7 +43,7 @@ export default function GoogleLoginButton({ onLoginSuccess, onLoginError }: Goog
   }, []);
 
   const handleCredentialResponse = async (response: any) => {
-    const idToken = response.credential;
+    const token = response.credential;
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7276";
 
     try {
@@ -51,7 +51,7 @@ export default function GoogleLoginButton({ onLoginSuccess, onLoginError }: Goog
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ token })
       });
 
       if (!res.ok) {

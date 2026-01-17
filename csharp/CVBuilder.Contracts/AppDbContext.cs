@@ -7,6 +7,7 @@ public class AppDbContext : DbContext
         : base(options) { }
 
     public DbSet<EfItem<User>> Users => Set<EfItem<User>>();
+    public DbSet<EfItem<UserIdentity>> UserIdentities => Set<EfItem<UserIdentity>>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -15,6 +16,20 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Content)
                   .HasColumnType("jsonb");
+            entity.ToTable("Users"); 
+            entity.Metadata.SetIsTableExcludedFromMigrations(true); 
+        });
+
+        modelBuilder.Entity<EfItem<UserIdentity>>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content)
+                  .HasColumnType("jsonb");
+            
+            // Create index on UserId for faster lookups
+            entity.HasIndex(e => e.Content)
+                  .HasMethod("gin")
+                  .HasOperators("jsonb_path_ops");
         });
     }
 }
