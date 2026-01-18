@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
 import EmailLoginButton from "@/components/EmailLoginButton";
 import { isLoggedIn, setUser } from "@/utils/auth";
+import { setToken } from "@/utils/cookies";
 import * as COLORS from "@/lib/colors";
 import { ROUTES } from "@/lib/paths";
 import { FaExclamationCircle } from 'react-icons/fa';
@@ -77,7 +78,7 @@ export default function LoginPage() {
       const { token: jwtToken, user } = await authResponse.json();
 
       // Store JWT token and user info
-      localStorage.setItem('token', jwtToken);
+      setToken(jwtToken);
       setUser({ name: user.name, picture: user.picture });
 
       // Clean URL and redirect home

@@ -1,29 +1,25 @@
+import { getToken as getCookieToken, removeToken as removeCookieToken, getUser as getCookieUser, removeUser as removeCookieUser, setUser as setCookieUser } from "./cookies";
+
 export const TOKEN_KEY = "token";
 export const USER_KEY = "user"; // store user info after login
 
 // Check if user is logged in
 export function isLoggedIn(): boolean {
-  return !!localStorage.getItem(TOKEN_KEY);
+  return !!getCookieToken();
 }
 
 // Logout user
 export function logout(): void {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  removeCookieToken();
+  removeCookieUser();
 }
 
 // Get logged in user info
 export function getUser(): { name: string; picture: string } | null {
-  const userJson = localStorage.getItem(USER_KEY);
-  if (!userJson) return null;
-  try {
-    return JSON.parse(userJson);
-  } catch {
-    return null;
-  }
+  return getCookieUser();
 }
 
 // Store user info after login
 export function setUser(user: { name: string; picture: string }): void {
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  setCookieUser(user);
 }
