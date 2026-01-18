@@ -21,18 +21,19 @@ export default function LoginPage() {
     const code = urlParams.get('code');
     const state = urlParams.get('state');
 
-    if (code && state === 'email_login') {
-      handleOAuthCallback(code);
+    if (code && (state === 'email_login' || state === 'google_login')) {
+      handleOAuthCallback(code, state);
     }
   }, [router]);
 
-  const handleOAuthCallback = async (code: string) => {
+  const handleOAuthCallback = async (code: string, state: string) => {
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7276";
       const redirectUri = `${window.location.origin}/login`;
+      const provider = state === 'google_login' ? 'google' : 'auth0';
 
       // First exchange code for access token
-      const tokenResponse = await fetch(`${apiBaseUrl}/auth/auth0/exchange`, {
+      const tokenResponse = await fetch(`${apiBaseUrl}/auth/${provider}/exchange`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, redirectUri })
@@ -46,7 +47,7 @@ export default function LoginPage() {
       const { token } = await tokenResponse.json();
 
       // Then authenticate with the main auth endpoint (this creates database entries)
-      const authResponse = await fetch(`${apiBaseUrl}/auth/auth0`, {
+      const authResponse = await fetch(`${apiBaseUrl}/auth/${provider}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token })

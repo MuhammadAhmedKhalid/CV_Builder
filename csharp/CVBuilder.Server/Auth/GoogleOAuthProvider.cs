@@ -2,6 +2,7 @@ using CVBuilder.Contracts;
 using CVBuilder.Contracts.Auth;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace CVBuilder.Server.Auth;
 
@@ -23,30 +24,52 @@ public class GoogleOAuthProvider : IOAuthProvider
                        throw new InvalidOperationException("Google Client Secret is not configured in environment variables");
     }
 
-    public async Task<OAuthUserInfo> ValidateTokenAsync(string idToken)
+    public async Task<OAuthUserInfo> ValidateTokenAsync(string accessToken)
     {
-        var settings = new GoogleJsonWebSignature.ValidationSettings()
-        {
-            Audience = [_clientId]
-        };
+        using var httpClient = new HttpClient();
+        
+        // Set authorization header with the access token
+        httpClient.DefaultRequestHeaders.Authorization = 
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        
+        // Get user info with access token
+        var response = await httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+        response.EnsureSuccessStatusCode();
 
-        var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+        var content = await response.Content.ReadAsStringAsync();
+        var userInfo = JsonDocument.Parse(content).RootElement;
+
+        // Helper method to safely get property values
+        string GetPropertySafely(string propertyName)
+        {
+            var value = userInfo.TryGetProperty(propertyName, out var property) 
+                ? property.GetString() ?? string.Empty 
+                : string.Empty;
+            Console.WriteLine($"Google OAuth property {propertyName}: '{value}' (type: {value?.GetType()})");
+            return value;
+        }
+
+        // Handle verified_email which can be boolean or string
+        bool GetEmailVerified()
+        {
+            if (userInfo.TryGetProperty("verified_email", out var verifiedProp))
+            {
+                if (verifiedProp.ValueKind == JsonValueKind.True || verifiedProp.ValueKind == JsonValueKind.False)
+                    return verifiedProp.GetBoolean();
+                else if (verifiedProp.ValueKind == JsonValueKind.String)
+                    return verifiedProp.GetString()?.ToLower() == "true";
+            }
+            return false;
+        }
 
         return new OAuthUserInfo
         {
-            ProviderUserId = payload.Subject,
-            Email = payload.Email,
-            Name = payload.Name,
-            Picture = payload.Picture ?? "",
-            Locale = payload.Locale,
-            EmailVerified = payload.EmailVerified,
-            RawClaims = new Dictionary<string, object>
-            {
-                ["iss"] = payload.Issuer,
-                ["aud"] = payload.Audience,
-                ["exp"] = payload.ExpirationTimeSeconds,
-                ["iat"] = payload.IssuedAtTimeSeconds
-            }
+            ProviderUserId = GetPropertySafely("id"),
+            Email = GetPropertySafely("email"),
+            Name = GetPropertySafely("name"),
+            Picture = GetPropertySafely("picture"),
+            EmailVerified = GetEmailVerified(),
+            RawClaims = new Dictionary<string, object>()
         };
     }
 
@@ -66,7 +89,11 @@ public class GoogleOAuthProvider : IOAuthProvider
             "prompt=consent"
         };
 
-        return $"https://accounts.google.com/o/oauth2/v2/auth?{string.Join("&", parameters)}";
+        var authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?{string.Join("&", parameters)}";
+        Console.WriteLine($"Google OAuth redirect URI: {redirectUri}");
+        Console.WriteLine($"Google OAuth auth URL: {authUrl}");
+        
+        return authUrl;
     }
 
     public async Task<string> ExchangeCodeForTokenAsync(string code, string redirectUri)

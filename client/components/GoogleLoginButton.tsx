@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import * as COLORS from "@/lib/colors";
 
 interface GoogleLoginButtonProps {
@@ -8,90 +8,47 @@ interface GoogleLoginButtonProps {
   onLoginError?: (error: string) => void;
 }
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-
 export default function GoogleLoginButton({ onLoginSuccess, onLoginError }: GoogleLoginButtonProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  useEffect(() => {
-    // Load Google Identity Services script
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-
-    const handleScriptLoad = () => {
-      const buttonDiv = document.getElementById("google-signin-button");
-      if (!window.google || !buttonDiv) return;
-
-      window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        callback: handleCredentialResponse,
-      });
-
-      window.google.accounts.id.renderButton(buttonDiv, { theme: "outline", size: "large" });
-    };
-
-    script.addEventListener("load", handleScriptLoad);
-
-    return () => {
-      script.removeEventListener("load", handleScriptLoad);
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  const handleCredentialResponse = async (response: any) => {
-    const token = response.credential;
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7276";
-
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    
     try {
-      const res = await fetch(`${apiBaseUrl}/auth/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ token })
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        const errorMessage = errorData?.error || `HTTP ${res.status}`;
-        if (onLoginError) onLoginError(errorMessage);
-        return;
+      // Use backend to get Google authorization URL
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7276";
+      const redirectUri = `${window.location.origin}/login`; // Redirect back to login page
+      
+      const response = await fetch(`${apiBaseUrl}/auth/google/authorize?redirectUri=${encodeURIComponent(redirectUri)}&state=google_login`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.error || "Failed to get authorization URL");
       }
-
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
-
-      if (onLoginSuccess) onLoginSuccess(data.token, data.user);
+      
+      const data = await response.json();
+      
+      // Redirect to Google login page
+      window.location.href = data.authorizationUrl;
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       if (onLoginError) onLoginError(errorMessage);
-    }
-  };
-
-  const handleGoogleSignIn = () => {
-    // Trigger the Google sign-in flow by clicking the hidden Google button
-    const googleButton = document.getElementById('google-signin-button') as HTMLElement;
-    const innerButton = googleButton?.querySelector('div[role="button"]') as HTMLElement;
-    if (innerButton) {
-      innerButton.click();
+      setIsLoading(false);
     }
   };
 
   return (
     <button
-      onClick={handleGoogleSignIn}
-      style={{
-        ...styles.button,
-        ...(isHovered ? styles.buttonHover : {}),
-      }}
+      onClick={handleGoogleLogin}
+      disabled={isLoading}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      style={{
+        ...styles.button,
+        ...(isLoading ? styles.buttonDisabled : isHovered ? styles.buttonHover : {}),
+      }}
     >
       <div style={styles.buttonContent}>
         <svg
@@ -118,9 +75,10 @@ export default function GoogleLoginButton({ onLoginSuccess, onLoginError }: Goog
             fill="#EA4335"
           />
         </svg>
-        <span style={styles.buttonText}>Sign in with Google</span>
+        <span style={styles.buttonText}>
+          {isLoading ? "Signing in..." : "Sign in with Google"}
+        </span>
       </div>
-      <div id="google-signin-button" style={{ display: 'none' }}></div>
     </button>
   );
 }
