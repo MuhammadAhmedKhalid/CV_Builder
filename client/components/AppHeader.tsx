@@ -173,11 +173,28 @@ const LoginButton = ({ onClick }: { onClick: () => void }) => (
 const Dropdown = ({
   onLogout,
   onSettings,
+  onProfile,
 }: {
   onLogout: () => void;
   onSettings: () => void;
+  onProfile: () => void;
 }) => (
   <div style={styles.dropdown}>
+    <button
+      style={styles.dropdownItem}
+      onClick={onProfile}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = Colors.SECONDARY;
+        e.currentTarget.style.color = Colors.PRIMARY;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "transparent";
+        e.currentTarget.style.color = Colors.PRIMARY_DARK;
+      }}
+    >
+      Profile
+    </button>
+
     <button
       style={styles.dropdownItem}
       onClick={onSettings}
@@ -270,6 +287,10 @@ export default function AppHeader() {
                 onSettings={() => {
                   setDropdownOpen(false);
                   router.push(ROUTES.SETTINGS);
+                }}
+                onProfile={() => {
+                  setDropdownOpen(false);
+                  router.push(ROUTES.PROFILE);
                 }}
               />
             )}
