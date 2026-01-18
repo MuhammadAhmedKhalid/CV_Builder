@@ -16,26 +16,21 @@ export default function EmailLoginButton({ onLoginSuccess, onLoginError }: Email
     setIsLoading(true);
     
     try {
-      // For Auth0 email authentication, we'll redirect to Auth0's universal login page
-      // This is the recommended approach for email/password authentication
-      const auth0Domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN;
-      const auth0ClientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID;
-      const redirectUri = `${window.location.origin}/api/auth/callback`;
+      // Use backend to get Auth0 authorization URL
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7276";
+      const redirectUri = `${window.location.origin}/login`; // Redirect back to login page
       
-      if (!auth0Domain || !auth0ClientId) {
-        throw new Error("Auth0 configuration is missing");
+      const response = await fetch(`${apiBaseUrl}/auth/auth0/authorize?redirectUri=${encodeURIComponent(redirectUri)}&state=email_login`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.error || "Failed to get authorization URL");
       }
-
-      // Construct the Auth0 authorization URL
-      const authUrl = new URL(`https://${auth0Domain}/authorize`);
-      authUrl.searchParams.append('response_type', 'code');
-      authUrl.searchParams.append('client_id', auth0ClientId);
-      authUrl.searchParams.append('redirect_uri', redirectUri);
-      authUrl.searchParams.append('scope', 'openid profile email');
-      authUrl.searchParams.append('connection', 'email'); // Specify email connection
-
+      
+      const data = await response.json();
+      
       // Redirect to Auth0 login page
-      window.location.href = authUrl.toString();
+      window.location.href = data.authorizationUrl;
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
