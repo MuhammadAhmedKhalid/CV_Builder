@@ -135,14 +135,6 @@ export default function LoginPage() {
           <div style={styles.buttonContainer}>
             <GoogleLoginButton
               disabled={isLoading}
-              onLoginSuccess={(token, user) => {
-                setUser({ name: user.name, picture: user.picture });
-                setError(null);
-                router.replace(ROUTES.HOME);
-              }}
-              onLoginError={(errMsg) =>
-                setError(`Login failed: ${errMsg}`)
-              }
             />
 
             <div style={styles.dividerContainer}>
@@ -153,14 +145,6 @@ export default function LoginPage() {
 
             <EmailLoginButton
               disabled={isLoading}
-              onLoginSuccess={(token, user) => {
-                setUser({ name: user.name, picture: user.picture });
-                setError(null);
-                router.replace(ROUTES.HOME);
-              }}
-              onLoginError={(errMsg) =>
-                setError(`Login failed: ${errMsg}`)
-              }
             />
           </div>
         </div>

@@ -5,11 +5,9 @@ import * as COLORS from "@/lib/colors";
 
 interface GoogleLoginButtonProps {
   disabled?: boolean;
-  onLoginSuccess?: (token: string, user: any) => void;
-  onLoginError?: (error: string) => void;
 }
 
-export default function GoogleLoginButton({ disabled, onLoginSuccess, onLoginError }: GoogleLoginButtonProps) {
+export default function GoogleLoginButton({ disabled }: GoogleLoginButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -35,7 +33,7 @@ export default function GoogleLoginButton({ disabled, onLoginSuccess, onLoginErr
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      if (onLoginError) onLoginError(errorMessage);
+      console.error("Google login error:", errorMessage);
       setIsLoading(false);
     }
   };
@@ -110,6 +108,12 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: COLORS.SECONDARY,
     boxShadow: `0 2px 8px ${COLORS.SHADOW_MEDIUM}`,
     transform: "translateY(-1px)",
+  },
+
+  buttonDisabled: {
+    opacity: 0.6,
+    cursor: "not-allowed",
+    transform: "none",
   },
 
   buttonContent: {

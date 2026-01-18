@@ -5,11 +5,9 @@ import * as COLORS from "@/lib/colors";
 
 interface EmailLoginButtonProps {
   disabled?: boolean;
-  onLoginSuccess?: (token: string, user: any) => void;
-  onLoginError?: (error: string) => void;
 }
 
-export default function EmailLoginButton({ disabled, onLoginSuccess, onLoginError }: EmailLoginButtonProps) {
+export default function EmailLoginButton({ disabled }: EmailLoginButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -35,7 +33,7 @@ export default function EmailLoginButton({ disabled, onLoginSuccess, onLoginErro
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      if (onLoginError) onLoginError(errorMessage);
+      console.error("Email login error:", errorMessage);
       setIsLoading(false);
     }
   };
