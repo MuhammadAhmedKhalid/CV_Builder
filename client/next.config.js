@@ -6,6 +6,14 @@ const nextConfig = {
 				protocol: 'https',
 				hostname: '**.googleusercontent.com',
 			},
+			{
+				protocol: 'https',
+				hostname: 's.gravatar.com',
+			},
+			{
+				protocol: 'https',
+				hostname: 'cdn.auth0.com',
+			},
 		],
 	},
 };

@@ -95,9 +95,103 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Exchange authorization code for access token
+    /// </summary>
+    [HttpPost("{provider}/exchange")]
+    public async Task<IActionResult> ExchangeCodeForToken(string provider, [FromBody] OAuthCodeExchangeRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Code))
+            return BadRequest(new { error = "Authorization code is required" });
+
+        if (string.IsNullOrEmpty(request.RedirectUri))
+            return BadRequest(new { error = "Redirect URI is required" });
+
+        try
+        {
+            // Parse provider type
+            if (!Enum.TryParse<OAuthProviderType>(provider, true, out var providerType))
+            {
+                return BadRequest(new { error = $"Unsupported provider: {provider}" });
+            }
+
+            // Check if provider is available
+            if (!_providerFactory.IsProviderAvailable(providerType))
+            {
+                return BadRequest(new { error = $"Provider {provider} is not configured" });
+            }
+
+            var providerInstance = _providerFactory.GetProvider(providerType);
+            var token = await providerInstance.ExchangeCodeForTokenAsync(request.Code, request.RedirectUri);
+
+            return Ok(new { token });
+        }
+        catch (Exception ex)
+        {
+            var innerError = ex.InnerException?.Message ?? ex.Message;
+            Console.WriteLine($"OAuth code exchange error: {innerError}");
+
+            return StatusCode(500, new { error = innerError, type = ex.GetType().Name });
+        }
+    }
+
+    /// <summary>
+    /// Validate OAuth token and get user info
+    /// </summary>
+    [HttpPost("{provider}/validate")]
+    public async Task<IActionResult> ValidateToken(string provider, [FromBody] OAuthTokenValidationRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Token))
+            return BadRequest(new { error = "Token is required" });
+
+        try
+        {
+            // Parse provider type
+            if (!Enum.TryParse<OAuthProviderType>(provider, true, out var providerType))
+            {
+                return BadRequest(new { error = $"Unsupported provider: {provider}" });
+            }
+
+            // Check if provider is available
+            if (!_providerFactory.IsProviderAvailable(providerType))
+            {
+                return BadRequest(new { error = $"Provider {provider} is not configured" });
+            }
+
+            var providerInstance = _providerFactory.GetProvider(providerType);
+            var userInfo = await providerInstance.ValidateTokenAsync(request.Token);
+
+            return Ok(new
+            {
+                id = userInfo.ProviderUserId,
+                email = userInfo.Email,
+                name = userInfo.Name,
+                picture = userInfo.Picture,
+                emailVerified = userInfo.EmailVerified
+            });
+        }
+        catch (Exception ex)
+        {
+            var innerError = ex.InnerException?.Message ?? ex.Message;
+            Console.WriteLine($"OAuth token validation error: {innerError}");
+
+            return StatusCode(500, new { error = innerError, type = ex.GetType().Name });
+        }
+    }
 }
 
 /// <summary>
 /// Request body for OAuth login
 /// </summary>
 public record OAuthLoginRequest(string Token);
+
+/// <summary>
+/// Request body for OAuth code exchange
+/// </summary>
+public record OAuthCodeExchangeRequest(string Code, string RedirectUri);
+
+/// <summary>
+/// Request body for OAuth token validation
+/// </summary>
+public record OAuthTokenValidationRequest(string Token);

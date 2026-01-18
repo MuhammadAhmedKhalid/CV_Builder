@@ -27,6 +27,7 @@ public class AuthenticationService
 
         // Find existing user identity
         var efIdentities = new EfTable<UserIdentity>(_db);
+        var efUsers = new EfTable<User>(_db);
         var existingIdentity = await efIdentities.GetItemOrDefaultAsync(
             i => i.ProviderType == providerType && i.ProviderUserId == userInfo.ProviderUserId && i.IsActive);
 
@@ -35,7 +36,6 @@ public class AuthenticationService
         if (existingIdentity != null)
         {
             // User exists, update identity and user info
-            var efUsers = new EfTable<User>(_db);
             user = await efUsers.GetItemOrDefaultAsync(u => u.UserId == existingIdentity.UserId);
 
             if (user == null)
@@ -58,63 +58,35 @@ public class AuthenticationService
         }
         else
         {
-            // Check if user exists with same email (merge accounts)
-            var efUsers = new EfTable<User>(_db);
-            user = await efUsers.GetItemOrDefaultAsync(u => u.Email.Equals(userInfo.Email, StringComparison.OrdinalIgnoreCase));
-
-            if (user != null)
+            // Create new user and identity (no email merging - each provider creates separate account)
+            user = new User
             {
-                // Merge accounts - add new identity to existing user
-                var newIdentity = new UserIdentity
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = user.UserId,
-                    ProviderType = providerType,
-                    ProviderUserId = userInfo.ProviderUserId,
-                    ProviderEmail = userInfo.Email,
-                    ProviderName = userInfo.Name,
-                    ProviderPicture = userInfo.Picture,
-                    CreatedAt = DateTime.UtcNow,
-                    LastUsedAt = DateTime.UtcNow,
-                    IsActive = true
-                };
+                Id = Guid.NewGuid().ToString(),
+                UserId = Guid.NewGuid().ToString(),
+                Email = userInfo.Email,
+                Name = userInfo.Name,
+                Picture = userInfo.Picture,
+                CreatedAt = DateTime.UtcNow,
+                LastLoginAt = DateTime.UtcNow
+            };
 
-                await efIdentities.CreateItemAsync(newIdentity);
-                user.LastLoginAt = DateTime.UtcNow;
-                await efUsers.ReplaceItemAsync(user);
-            }
-            else
+            await efUsers.CreateItemAsync(user);
+
+            var identity = new UserIdentity
             {
-                // Create new user and identity
-                user = new User
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = Guid.NewGuid().ToString(),
-                    Email = userInfo.Email,
-                    Name = userInfo.Name,
-                    Picture = userInfo.Picture,
-                    CreatedAt = DateTime.UtcNow,
-                    LastLoginAt = DateTime.UtcNow
-                };
+                Id = Guid.NewGuid().ToString(),
+                UserId = user.UserId,
+                ProviderType = providerType,
+                ProviderUserId = userInfo.ProviderUserId,
+                ProviderEmail = userInfo.Email,
+                ProviderName = userInfo.Name,
+                ProviderPicture = userInfo.Picture,
+                CreatedAt = DateTime.UtcNow,
+                LastUsedAt = DateTime.UtcNow,
+                IsActive = true
+            };
 
-                await efUsers.CreateItemAsync(user);
-
-                var identity = new UserIdentity
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = user.UserId,
-                    ProviderType = providerType,
-                    ProviderUserId = userInfo.ProviderUserId,
-                    ProviderEmail = userInfo.Email,
-                    ProviderName = userInfo.Name,
-                    ProviderPicture = userInfo.Picture,
-                    CreatedAt = DateTime.UtcNow,
-                    LastUsedAt = DateTime.UtcNow,
-                    IsActive = true
-                };
-
-                await efIdentities.CreateItemAsync(identity);
-            }
+            await efIdentities.CreateItemAsync(identity);
         }
 
         // Generate JWT token

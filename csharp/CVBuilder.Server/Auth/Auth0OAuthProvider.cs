@@ -32,25 +32,44 @@ public class Auth0OAuthProvider : IOAuthProvider
     {
         using var httpClient = new HttpClient();
         
+        // Set authorization header with the access token
+        httpClient.DefaultRequestHeaders.Authorization = 
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
         // Validate token with Auth0 userinfo endpoint
         var response = await httpClient.GetAsync($"https://{_domain}/userinfo");
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
+        Console.WriteLine($"Auth0 userinfo response: {content}");
         var userInfo = JsonDocument.Parse(content).RootElement;
+
+        // Helper method to safely get property values
+        string GetPropertySafely(string propertyName)
+        {
+            return userInfo.TryGetProperty(propertyName, out var property) 
+                ? property.GetString() ?? string.Empty 
+                : string.Empty;
+        }
+
+        bool GetBooleanPropertySafely(string propertyName)
+        {
+            return userInfo.TryGetProperty(propertyName, out var property) 
+                && property.GetBoolean();
+        }
 
         return new OAuthUserInfo
         {
-            ProviderUserId = userInfo.GetProperty("sub").GetString() ?? string.Empty,
-            Email = userInfo.GetProperty("email").GetString() ?? string.Empty,
-            Name = userInfo.GetProperty("name").GetString() ?? string.Empty,
-            Picture = userInfo.GetProperty("picture").GetString() ?? string.Empty,
-            EmailVerified = userInfo.GetProperty("email_verified").GetBoolean(),
+            ProviderUserId = GetPropertySafely("sub"),
+            Email = GetPropertySafely("email"),
+            Name = GetPropertySafely("name"),
+            Picture = GetPropertySafely("picture"),
+            EmailVerified = GetBooleanPropertySafely("email_verified"),
             RawClaims = new Dictionary<string, object>
             {
-                ["sub"] = userInfo.GetProperty("sub").GetString(),
-                ["aud"] = userInfo.GetProperty("aud").GetString(),
-                ["iss"] = userInfo.GetProperty("iss").GetString()
+                ["sub"] = GetPropertySafely("sub"),
+                ["aud"] = GetPropertySafely("aud"),
+                ["iss"] = GetPropertySafely("iss")
             }
         };
     }
@@ -66,7 +85,8 @@ public class Auth0OAuthProvider : IOAuthProvider
             $"redirect_uri={Uri.EscapeDataString(redirectUri)}",
             $"response_type=code",
             $"scope={Uri.EscapeDataString(string.Join(" ", allScopes))}",
-            $"state={Uri.EscapeDataString(state)}"
+            $"state={Uri.EscapeDataString(state)}",
+            $"prompt=login"
         };
 
         return $"https://{_domain}/authorize?{string.Join("&", parameters)}";

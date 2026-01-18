@@ -15,7 +15,64 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isLoggedIn()) router.replace(ROUTES.HOME);
+
+    // Handle OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+
+    if (code && state === 'email_login') {
+      handleOAuthCallback(code);
+    }
   }, [router]);
+
+  const handleOAuthCallback = async (code: string) => {
+    try {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7276";
+      const redirectUri = `${window.location.origin}/login`;
+
+      // First exchange code for access token
+      const tokenResponse = await fetch(`${apiBaseUrl}/auth/auth0/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, redirectUri })
+      });
+
+      if (!tokenResponse.ok) {
+        const errorData = await tokenResponse.json();
+        throw new Error(errorData?.error || 'Failed to exchange code for token');
+      }
+
+      const { token } = await tokenResponse.json();
+
+      // Then authenticate with the main auth endpoint (this creates database entries)
+      const authResponse = await fetch(`${apiBaseUrl}/auth/auth0`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+
+      if (!authResponse.ok) {
+        const errorData = await authResponse.json();
+        throw new Error(errorData?.error || 'Failed to authenticate');
+      }
+
+      const { token: jwtToken, user } = await authResponse.json();
+
+      // Store JWT token and user info
+      localStorage.setItem('token', jwtToken);
+      setUser({ name: user.name, picture: user.picture });
+
+      // Redirect to home and clean URL
+      router.replace(ROUTES.HOME);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Login failed: ${errorMessage}`);
+
+      // Clean URL parameters
+      window.history.replaceState({}, '', '/login');
+    }
+  };
 
   return (
     <div style={styles.page}>
