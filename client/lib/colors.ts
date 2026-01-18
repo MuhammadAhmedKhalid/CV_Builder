@@ -24,4 +24,5 @@ export const ERROR_TEXT = "#991b1b";
 
 // Overlay / modal
 export const OVERLAY = "rgba(0,0,0,0.35)";
+export const OVERLAY_LIGHT = "rgba(255, 255, 255, 0.9)";
 export const MODAL_SHADOW = "rgba(0,0,0,0.15)";

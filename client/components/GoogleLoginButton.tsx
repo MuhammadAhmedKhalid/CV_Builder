@@ -4,11 +4,12 @@ import { useState } from "react";
 import * as COLORS from "@/lib/colors";
 
 interface GoogleLoginButtonProps {
+  disabled?: boolean;
   onLoginSuccess?: (token: string, user: any) => void;
   onLoginError?: (error: string) => void;
 }
 
-export default function GoogleLoginButton({ onLoginSuccess, onLoginError }: GoogleLoginButtonProps) {
+export default function GoogleLoginButton({ disabled, onLoginSuccess, onLoginError }: GoogleLoginButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -42,12 +43,12 @@ export default function GoogleLoginButton({ onLoginSuccess, onLoginError }: Goog
   return (
     <button
       onClick={handleGoogleLogin}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
         ...styles.button,
-        ...(isLoading ? styles.buttonDisabled : isHovered ? styles.buttonHover : {}),
+        ...(isLoading || disabled ? styles.buttonDisabled : isHovered ? styles.buttonHover : {}),
       }}
     >
       <div style={styles.buttonContent}>

@@ -4,11 +4,12 @@ import { useState } from "react";
 import * as COLORS from "@/lib/colors";
 
 interface EmailLoginButtonProps {
+  disabled?: boolean;
   onLoginSuccess?: (token: string, user: any) => void;
   onLoginError?: (error: string) => void;
 }
 
-export default function EmailLoginButton({ onLoginSuccess, onLoginError }: EmailLoginButtonProps) {
+export default function EmailLoginButton({ disabled, onLoginSuccess, onLoginError }: EmailLoginButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -42,12 +43,12 @@ export default function EmailLoginButton({ onLoginSuccess, onLoginError }: Email
   return (
     <button
       onClick={handleEmailLogin}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
         ...styles.button,
-        ...(isLoading ? styles.buttonDisabled : isHovered ? styles.buttonHover : {}),
+        ...(isLoading || disabled ? styles.buttonDisabled : isHovered ? styles.buttonHover : {}),
       }}
     >
       <div style={styles.buttonContent}>

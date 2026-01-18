@@ -8,9 +8,11 @@ import EmailLoginButton from "@/components/EmailLoginButton";
 import { isLoggedIn, setUser } from "@/utils/auth";
 import * as COLORS from "@/lib/colors";
 import { ROUTES } from "@/lib/paths";
+import { FaExclamationCircle } from 'react-icons/fa';
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,6 +24,7 @@ export default function LoginPage() {
     const state = urlParams.get('state');
 
     if (code && (state === 'email_login' || state === 'google_login')) {
+      setIsLoading(true);
       handleOAuthCallback(code, state);
     }
   }, [router]);
@@ -64,11 +67,13 @@ export default function LoginPage() {
       localStorage.setItem('token', jwtToken);
       setUser({ name: user.name, picture: user.picture });
 
-      // Redirect to home and clean URL
+      // Clear URL immediately and redirect to home
+      window.history.replaceState({}, '', '/login');
       router.replace(ROUTES.HOME);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(`Login failed: ${errorMessage}`);
+      setIsLoading(false);
 
       // Clean URL parameters
       window.history.replaceState({}, '', '/login');
@@ -81,44 +86,67 @@ export default function LoginPage() {
 
       <div style={styles.container}>
         <div style={styles.card}>
-          <h1 style={styles.title}>Welcome Back</h1>
-          <p style={styles.subtitle}>
-            Sign in to continue building your CV
-          </p>
+          <div style={styles.cardHeader}>
+            <h1 style={styles.title}>Welcome Back</h1>
+            <p style={styles.subtitle}>
+              Sign in to continue building your CV
+            </p>
+          </div>
 
           {error && (
             <div style={styles.errorBox}>
-              {error}
+              <div style={styles.errorIcon}>
+                <FaExclamationCircle size={20} color={COLORS.ERROR_TEXT} />
+              </div>
+              <div style={styles.errorContent}>
+                <div style={styles.errorTitle}>Authentication Error</div>
+                <div style={styles.errorMessage}>{error}</div>
+              </div>
             </div>
           )}
 
-          <GoogleLoginButton
-            onLoginSuccess={(token, user) => {
-              setUser({ name: user.name, picture: user.picture });
-              setError(null);
-              router.replace(ROUTES.HOME);
-            }}
-            onLoginError={(errMsg) =>
-              setError(`Login failed: ${errMsg}`)
-            }
-          />
+          <div style={styles.buttonContainer}>
+            <GoogleLoginButton
+              disabled={isLoading}
+              onLoginSuccess={(token, user) => {
+                setUser({ name: user.name, picture: user.picture });
+                setError(null);
+                router.replace(ROUTES.HOME);
+              }}
+              onLoginError={(errMsg) =>
+                setError(`Login failed: ${errMsg}`)
+              }
+            />
 
-          <div style={styles.dividerContainer}>
-            <div style={styles.dividerLine}></div>
-            <span style={styles.dividerText}>OR</span>
-            <div style={styles.dividerLine}></div>
+            <div style={styles.dividerContainer}>
+              <div style={styles.dividerLine}></div>
+              <span style={styles.dividerText}>OR</span>
+              <div style={styles.dividerLine}></div>
+            </div>
+
+            <EmailLoginButton
+              disabled={isLoading}
+              onLoginSuccess={(token, user) => {
+                setUser({ name: user.name, picture: user.picture });
+                setError(null);
+                router.replace(ROUTES.HOME);
+              }}
+              onLoginError={(errMsg) =>
+                setError(`Login failed: ${errMsg}`)
+              }
+            />
           </div>
 
-          <EmailLoginButton
-            onLoginSuccess={(token, user) => {
-              setUser({ name: user.name, picture: user.picture });
-              setError(null);
-              router.replace(ROUTES.HOME);
-            }}
-            onLoginError={(errMsg) =>
-              setError(`Login failed: ${errMsg}`)
-            }
-          />
+          {isLoading && (
+            <div style={styles.loadingOverlay}>
+              <div style={styles.loadingBackdrop}>
+                <div style={styles.loadingSpinner}>
+                  <div style={styles.spinner}></div>
+                  <div style={styles.loadingText}>Authenticating...</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -166,13 +194,37 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   errorBox: {
-    marginBottom: "16px",
-    padding: "12px",
-    backgroundColor: COLORS.SECONDARY,
-    color: COLORS.PRIMARY_DARK,
-    borderRadius: "8px",
-    fontSize: "13px",
-    border: `1px solid ${COLORS.BORDER_PRIMARY}`,
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '12px',
+    marginBottom: '16px',
+    padding: '12px',
+    backgroundColor: COLORS.ERROR_BG,
+    color: COLORS.ERROR_TEXT,
+    borderRadius: '8px',
+    border: `1px solid ${COLORS.ERROR_TEXT}20`,
+    textAlign: 'left',
+  },
+
+  errorIcon: {
+    flexShrink: 0,
+    marginTop: '2px',
+  },
+
+  errorContent: {
+    flex: 1,
+  },
+
+  errorTitle: {
+    fontSize: '16px',
+    fontWeight: 600,
+    marginBottom: '4px',
+  },
+
+  errorMessage: {
+    fontSize: '14px',
+    lineHeight: 1.4,
+    opacity: 0.9,
   },
 
   dividerContainer: {
@@ -193,5 +245,69 @@ const styles: Record<string, React.CSSProperties> = {
     color: COLORS.PRIMARY,
     fontWeight: "500",
     padding: "0 8px",
+  },
+
+  cardHeader: {
+    marginBottom: "24px",
+  },
+
+  buttonContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+
+  loadingBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: COLORS.OVERLAY_LIGHT,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+  },
+
+  loadingSpinner: {
+    backgroundColor: COLORS.WHITE,
+    padding: "20px 40px",
+    borderRadius: "8px",
+    boxShadow: `0 4px 12px ${COLORS.SHADOW_MEDIUM}`,
+    fontSize: "16px",
+    fontWeight: "500",
+    color: COLORS.PRIMARY_DARK,
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+  },
+
+  spinner: {
+    width: "20px",
+    height: "20px",
+    border: `2px solid ${COLORS.PRIMARY}`,
+    borderTop: "2px solid transparent",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+  },
+
+  loadingText: {
+    fontSize: "16px",
+    fontWeight: "500",
+    color: COLORS.PRIMARY_DARK,
+  },
+
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: COLORS.OVERLAY_LIGHT,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
   },
 };
