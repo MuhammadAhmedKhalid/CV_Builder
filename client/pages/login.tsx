@@ -13,20 +13,33 @@ import { FaExclamationCircle } from 'react-icons/fa';
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // NEW: block initial render
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoggedIn()) router.replace(ROUTES.HOME);
+    const initAuth = async () => {
+      // Already logged in → redirect immediately
+      if (isLoggedIn()) {
+        router.replace(ROUTES.HOME);
+        return;
+      }
 
-    // Handle OAuth callback
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
+      // Handle OAuth callback
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+      const state = urlParams.get("state");
 
-    if (code && (state === 'email_login' || state === 'google_login')) {
-      setIsLoading(true);
-      handleOAuthCallback(code, state);
-    }
+      if (code && (state === "email_login" || state === "google_login")) {
+        setIsLoading(true);
+        await handleOAuthCallback(code, state);
+        return;
+      }
+
+      // No auth action → show login UI
+      setIsCheckingAuth(false);
+    };
+
+    initAuth();
   }, [router]);
 
   const handleOAuthCallback = async (code: string, state: string) => {
@@ -35,7 +48,7 @@ export default function LoginPage() {
       const redirectUri = `${window.location.origin}/login`;
       const provider = state === 'google_login' ? 'google' : 'auth0';
 
-      // First exchange code for access token
+      // Exchange code for access token
       const tokenResponse = await fetch(`${apiBaseUrl}/auth/${provider}/exchange`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,7 +62,7 @@ export default function LoginPage() {
 
       const { token } = await tokenResponse.json();
 
-      // Then authenticate with the main auth endpoint (this creates database entries)
+      // Authenticate with main auth endpoint
       const authResponse = await fetch(`${apiBaseUrl}/auth/${provider}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,18 +80,32 @@ export default function LoginPage() {
       localStorage.setItem('token', jwtToken);
       setUser({ name: user.name, picture: user.picture });
 
-      // Clear URL immediately and redirect to home
+      // Clean URL and redirect home
       window.history.replaceState({}, '', '/login');
       router.replace(ROUTES.HOME);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(`Login failed: ${errorMessage}`);
       setIsLoading(false);
-
-      // Clean URL parameters
       window.history.replaceState({}, '', '/login');
+      setIsCheckingAuth(false);
     }
   };
+
+  // Early return for loading or auth checking
+  if (isCheckingAuth || isLoading) {
+    return (
+      <div style={styles.page}>
+        <AppHeader />
+        <div style={styles.container}>
+          <div style={styles.loadingSpinner}>
+            <div style={styles.spinner}></div>
+            <div style={styles.loadingText}>Authenticating...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>
@@ -136,17 +163,6 @@ export default function LoginPage() {
               }
             />
           </div>
-
-          {isLoading && (
-            <div style={styles.loadingOverlay}>
-              <div style={styles.loadingBackdrop}>
-                <div style={styles.loadingSpinner}>
-                  <div style={styles.spinner}></div>
-                  <div style={styles.loadingText}>Authenticating...</div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -257,19 +273,6 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "12px",
   },
 
-  loadingBackdrop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: COLORS.OVERLAY_LIGHT,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000,
-  },
-
   loadingSpinner: {
     backgroundColor: COLORS.WHITE,
     padding: "20px 40px",
@@ -296,18 +299,5 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "16px",
     fontWeight: "500",
     color: COLORS.PRIMARY_DARK,
-  },
-
-  loadingOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: COLORS.OVERLAY_LIGHT,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000,
   },
 };
