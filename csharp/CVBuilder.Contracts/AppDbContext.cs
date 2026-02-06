@@ -8,6 +8,7 @@ public class AppDbContext : DbContext
 
     public DbSet<EfItem<User>> Users => Set<EfItem<User>>();
     public DbSet<EfItem<UserIdentity>> UserIdentities => Set<EfItem<UserIdentity>>();
+    public DbSet<EfItem<CvTemplate>> CvTemplates => Set<EfItem<CvTemplate>>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +31,14 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => e.Content)
                   .HasMethod("gin")
                   .HasOperators("jsonb_path_ops");
+        });
+
+        modelBuilder.Entity<EfItem<CvTemplate>>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content)
+                  .HasColumnType("jsonb");
+            entity.ToTable("CvTemplates");
         });
     }
 }

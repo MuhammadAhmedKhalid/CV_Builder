@@ -43,7 +43,7 @@ namespace CVBuilder.Contracts
     {
         public string UserId { get; set; } // Foreign key to User
         public OAuthProviderType ProviderType { get; set; }
-        public string ProviderUserId { get; set; } // Unique ID from the provider
+        public string ProviderUserId { get; set; } // Unique ID from provider
         public string? ProviderEmail { get; set; } // Email from provider (may differ from user email)
         public string? ProviderName { get; set; } // Name from provider
         public string? ProviderPicture { get; set; } // Picture URL from provider
@@ -53,5 +53,50 @@ namespace CVBuilder.Contracts
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime LastUsedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
+    }
+
+    public class CvTemplate : DbItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public List<string> Tags { get; set; } = new();
+        public string HtmlContent { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        // TO / FROM methods for API contract mapping
+        public static CvTemplate FromContract(CvTemplateContract contract)
+        {
+            return new CvTemplate
+            {
+                Id = contract.Id,
+                Name = contract.Name,
+                Description = contract.Description,
+                Tags = contract.Tags,
+                HtmlContent = contract.HtmlContent,
+                Category = contract.Category,
+                IsActive = contract.IsActive,
+                CreatedAt = contract.CreatedAt,
+                UpdatedAt = contract.UpdatedAt
+            };
+        }
+
+        public CvTemplateContract ToContract()
+        {
+            return new CvTemplateContract
+            {
+                Id = this.Id,
+                Name = this.Name,
+                Description = this.Description,
+                Tags = this.Tags,
+                HtmlContent = this.HtmlContent,
+                Category = this.Category,
+                IsActive = this.IsActive,
+                CreatedAt = this.CreatedAt,
+                UpdatedAt = this.UpdatedAt
+            };
+        }
     }
 }
