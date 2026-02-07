@@ -7,58 +7,13 @@ import { useRouter, usePathname } from "next/navigation";
 import * as Colors from "@/lib/colors";
 import { IMAGES, ROUTES } from "@/lib/paths";
 import ConfirmModal from "@/components/ConfirmModal";
+import { useMobile } from "@/hooks/useMobile";
 
-// Mobile breakpoint
-const MOBILE_BREAKPOINT = 768;
-
-// Inline styles
 const styles: { [key: string]: CSSProperties } = {
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: Colors.WHITE,
-    padding: "0.75rem 1.5rem",
-    boxShadow: `0 4px 10px ${Colors.SHADOW_LIGHT}`,
-    position: "sticky",
-    top: 0,
-    left: 0,
-    right: 0,
-    width: "100%",
-    boxSizing: "border-box",
-    margin: 0,
-    zIndex: 50,
-  },
-  logo: {
-    fontSize: "1.8rem",
-    fontWeight: 700,
-    color: Colors.PRIMARY,
-    cursor: "pointer",
-    transition: "color 0.2s ease",
-  },
-  logoImage: {
-    cursor: "pointer",
-    display: "block",
-  },
   userSection: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
     position: "relative",
-  },
-  mobileHidden: {
-    display: 'block',
-  },
-  avatar: {
-    width: "44px",
-    height: "44px",
-    borderRadius: "50%",
-    cursor: "pointer",
-    border: `2px solid ${Colors.PRIMARY_LIGHT}`,
-    transition: "transform 0.2s ease",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   },
   avatarContainer: {
     width: 44,
@@ -69,16 +24,7 @@ const styles: { [key: string]: CSSProperties } = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-  },
-  loginButton: {
-    padding: "0.5rem 1.2rem",
-    backgroundColor: "transparent",
-    color: Colors.PRIMARY_DARK,
-    fontWeight: 500,
-    border: "none",
-    borderRadius: "8px",
     cursor: "pointer",
-    transition: "color 0.2s ease, background-color 0.2s ease",
   },
   dropdown: {
     position: "absolute",
@@ -95,7 +41,6 @@ const styles: { [key: string]: CSSProperties } = {
   dropdownItem: {
     width: "100%",
     padding: "0.65rem 0.75rem",
-    textAlign: "left",
     background: "transparent",
     border: "none",
     cursor: "pointer",
@@ -103,299 +48,114 @@ const styles: { [key: string]: CSSProperties } = {
     fontSize: "14px",
     color: Colors.PRIMARY_DARK,
     borderRadius: "8px",
-    transition: "background-color 0.2s ease, color 0.2s ease",
+    textAlign: "left",
   },
-  logoContainer: {
-    display: "flex",
-    alignItems: "center",
-    cursor: "pointer",
-    height: "44px",
-  },
-  // Bottom navbar styles
   bottomNavbar: {
-    position: 'fixed',
+    position: "fixed",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: Colors.WHITE,
-    boxShadow: `0 -4px 10px ${Colors.SHADOW_LIGHT}`,
-    display: 'flex',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    padding: '8px 0',
+    background: "linear-gradient(to bottom, #030712, #000000)",
+    borderTop: `1px solid rgba(16, 185, 129, 0.2)`,
+    boxShadow: `0 -4px 20px rgba(0, 0, 0, 0.5)`,
+    display: "flex",
+    justifyContent: "space-around",
+    padding: "12px",
     zIndex: 50,
+    height: "64px",
   },
   bottomNavButton: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
-    padding: "8px 16px",
-    backgroundColor: "transparent",
+    background: "transparent",
     border: "none",
     cursor: "pointer",
-    transition: "color 0.2s ease, background-color 0.2s ease",
-    color: Colors.PRIMARY_DARK,
-    fontSize: "12px",
-    fontWeight: 500,
+    color: "rgba(255, 255, 255, 0.7)",
+    transition: "all 0.3s ease",
+    padding: "6px",
     borderRadius: "12px",
-  },
-  bottomNavButtonActive: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "8px 16px",
-    backgroundColor: Colors.SECONDARY,
-    border: "none",
-    cursor: "pointer",
-    transition: "color 0.2s ease, background-color 0.2s ease",
-    color: Colors.PRIMARY,
-    fontSize: "12px",
-    fontWeight: 500,
-    borderRadius: "12px",
+    position: "relative",
   },
   bottomNavIcon: {
     width: "24px",
     height: "24px",
-    marginBottom: "4px",
+    transition: "all 0.3s ease",
   },
   bottomNavIconActive: {
     width: "24px",
     height: "24px",
-    marginBottom: "4px",
-    stroke: Colors.PRIMARY,
+    filter: "drop-shadow(0 0 8px rgba(16, 185, 129, 0.8))",
+    color: Colors.PRIMARY_LIGHT,
+    transition: "all 0.3s ease",
   },
-  // Bottom overlay styles
-  bottomOverlay: {
+  overlayBackdrop: {
     position: "fixed",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: Colors.WHITE,
-    borderTop: `1px solid ${Colors.BORDER_PRIMARY}`,
-    borderTopLeftRadius: "16px",
-    borderTopRightRadius: "16px",
-    boxShadow: `0 -4px 20px ${Colors.SHADOW_MEDIUM}`,
-    padding: "20px",
-    zIndex: 100,
-    transform: "translateY(0)",
-    transition: "transform 0.3s ease",
-  },
-  bottomOverlayItem: {
-    width: "100%",
-    padding: "16px",
-    textAlign: "left",
-    backgroundColor: "transparent",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: 500,
-    fontSize: "16px",
-    color: Colors.PRIMARY_DARK,
-    borderRadius: "12px",
-    transition: "background-color 0.2s ease",
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "8px",
-  },
-  bottomOverlayBackdrop: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: Colors.OVERLAY,
+    inset: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
     zIndex: 99,
   },
+  overlay: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    background: "linear-gradient(to bottom, rgba(16, 185, 129, 0.05), rgba(34, 197, 94, 0.08))",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+    borderTop: `1px solid rgba(16, 185, 129, 0.2)`,
+    borderTopLeftRadius: "20px",
+    borderTopRightRadius: "20px",
+    padding: "24px",
+    zIndex: 100,
+    boxShadow: "0 -8px 32px rgba(16, 185, 129, 0.15)",
+  },
+  overlayItem: {
+    width: "100%",
+    padding: "16px 20px",
+    display: "flex",
+    alignItems: "center",
+    background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05))",
+    border: `1px solid rgba(16, 185, 129, 0.15)`,
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: 500,
+    borderRadius: "16px",
+    color: "rgba(255, 255, 255, 0.9)",
+    transition: "all 0.3s ease",
+    marginBottom: "12px",
+  },
 };
-
-// Inline sub-components
-const Logo = ({ onClick }: { onClick: () => void }) => (
-  <div onClick={onClick} style={styles.logoContainer}>
-    <Image
-      src={IMAGES.LOGO}
-      alt="CV Builder"
-      width={100}
-      height={30}
-      priority
-      style={{ height: "auto", width: "auto", maxWidth: "100px" }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLImageElement).style.opacity = "0.85";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLImageElement).style.opacity = "1";
-      }}
-    />
-  </div>
-);
-
-const Avatar = ({
-  src,
-  alt,
-  onClick,
-}: {
-  src: string;
-  alt: string;
-  onClick: () => void;
-}) => {
-  const [imgSrc, setImgSrc] = useState(src);
-
-  useEffect(() => {
-    setImgSrc(src);
-  }, [src]);
-
-  return (
-    <div style={styles.avatarContainer}>
-      <Image
-        src={imgSrc}
-        alt={alt}
-        width={44}
-        height={44}
-        style={{ display: "block", objectFit: "cover", cursor: "pointer" }}
-        onClick={onClick}
-        onError={() => {
-          setImgSrc(IMAGES.DEFAULT_AVATAR);
-        }}
-      />
-    </div>
-  );
-};
-
-const LoginButton = ({ onClick }: { onClick: () => void }) => (
-  <button
-    style={styles.loginButton}
-    onClick={onClick}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.textDecoration = "underline";
-      e.currentTarget.style.fontWeight = "700";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.textDecoration = "none";
-      e.currentTarget.style.fontWeight = "500";
-    }}
-  >
-    Login
-  </button>
-);
-
-const Dropdown = ({
-  onLogout,
-  onSettings,
-  onProfile,
-}: {
-  onLogout: () => void;
-  onSettings: () => void;
-  onProfile: () => void;
-}) => (
-  <div style={styles.dropdown}>
-    <button
-      style={styles.dropdownItem}
-      onClick={onProfile}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = Colors.SECONDARY;
-        e.currentTarget.style.color = Colors.PRIMARY;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "transparent";
-        e.currentTarget.style.color = Colors.PRIMARY_DARK;
-      }}
-    >
-      Profile
-    </button>
-
-    <button
-      style={styles.dropdownItem}
-      onClick={onSettings}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = Colors.SECONDARY;
-        e.currentTarget.style.color = Colors.PRIMARY;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "transparent";
-        e.currentTarget.style.color = Colors.PRIMARY_DARK;
-      }}
-    >
-      Settings
-    </button>
-
-    {/* Divider */}
-    <div
-      style={{
-        height: "1px",
-        backgroundColor: Colors.BORDER_PRIMARY,
-        margin: "4px 0",
-        opacity: 0.6,
-      }}
-    />
-
-    <button
-      style={styles.dropdownItem}
-      onClick={onLogout}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = Colors.SECONDARY;
-        e.currentTarget.style.color = Colors.PRIMARY;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "transparent";
-        e.currentTarget.style.color = Colors.PRIMARY_DARK;
-      }}
-    >
-      Logout
-    </button>
-  </div>
-);
 
 const BottomNavbar = ({
   onHomeClick,
   onMoreClick,
+  onLoginClick,
   isHomeActive,
   isLoggedIn,
 }: {
   onHomeClick: () => void;
   onMoreClick: () => void;
+  onLoginClick?: () => void;
   isHomeActive: boolean;
   isLoggedIn: boolean;
 }) => (
   <div style={styles.bottomNavbar}>
-    <button
-      style={isHomeActive ? styles.bottomNavButtonActive : styles.bottomNavButton}
-      onClick={onHomeClick}
-      onMouseEnter={(e) => {
-        if (!isHomeActive) {
-          e.currentTarget.style.backgroundColor = Colors.SECONDARY;
-          e.currentTarget.style.color = Colors.PRIMARY;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isHomeActive) {
-          e.currentTarget.style.backgroundColor = "transparent";
-          e.currentTarget.style.color = Colors.PRIMARY_DARK;
-        }
-      }}
-    >
+    <button style={styles.bottomNavButton} onClick={onHomeClick}>
       <svg
         style={isHomeActive ? styles.bottomNavIconActive : styles.bottomNavIcon}
         fill="none"
-        stroke={isHomeActive ? Colors.WHITE : "currentColor"}
+        stroke={isHomeActive ? Colors.PRIMARY_LIGHT : "currentColor"}
         strokeWidth="2"
         viewBox="0 0 24 24"
       >
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
-      Home
     </button>
-
-    <button
-      style={styles.bottomNavButton}
-      onClick={onMoreClick}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.color = Colors.PRIMARY;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.color = Colors.PRIMARY_DARK;
-      }}
-    >
+    <button style={styles.bottomNavButton} onClick={isLoggedIn ? onMoreClick : onLoginClick}>
       <svg
         style={styles.bottomNavIcon}
         fill="none"
@@ -403,11 +163,20 @@ const BottomNavbar = ({
         strokeWidth="2"
         viewBox="0 0 24 24"
       >
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
+        {isLoggedIn ? (
+          <>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </>
+        ) : (
+          <>
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <polyline points="10 17 15 12 10 7"></polyline>
+            <line x1="15" y1="12" x2="3" y2="12"></line>
+          </>
+        )}
       </svg>
-      More
     </button>
   </div>
 );
@@ -420,18 +189,9 @@ const BottomOverlayForLoggedOut = ({
   onClose: () => void;
 }) => (
   <>
-    <div style={styles.bottomOverlayBackdrop} onClick={onClose} />
-    <div style={styles.bottomOverlay}>
-      <button
-        style={styles.bottomOverlayItem}
-        onClick={onLogin}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = Colors.SECONDARY;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
-        }}
-      >
+    <div style={styles.overlayBackdrop} onClick={onClose} />
+    <div style={styles.overlay}>
+      <button style={styles.overlayItem} onClick={onLogin}>
         <svg
           width="20"
           height="20"
@@ -463,18 +223,9 @@ const BottomOverlay = ({
   onClose: () => void;
 }) => (
   <>
-    <div style={styles.bottomOverlayBackdrop} onClick={onClose} />
-    <div style={styles.bottomOverlay}>
-      <button
-        style={styles.bottomOverlayItem}
-        onClick={onProfile}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = Colors.SECONDARY;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
-        }}
-      >
+    <div style={styles.overlayBackdrop} onClick={onClose} />
+    <div style={styles.overlay}>
+      <button style={styles.overlayItem} onClick={onProfile}>
         <svg
           width="20"
           height="20"
@@ -489,17 +240,7 @@ const BottomOverlay = ({
         </svg>
         Profile
       </button>
-
-      <button
-        style={styles.bottomOverlayItem}
-        onClick={onSettings}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = Colors.SECONDARY;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
-        }}
-      >
+      <button style={styles.overlayItem} onClick={onSettings}>
         <svg
           width="20"
           height="20"
@@ -514,17 +255,7 @@ const BottomOverlay = ({
         </svg>
         Settings
       </button>
-
-      <button
-        style={styles.bottomOverlayItem}
-        onClick={onLogout}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = Colors.SECONDARY;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
-        }}
-      >
+      <button style={styles.overlayItem} onClick={onLogout}>
         <svg
           width="20"
           height="20"
@@ -544,12 +275,89 @@ const BottomOverlay = ({
   </>
 );
 
+const Logo = ({ onClick }: { onClick: () => void }) => (
+  <div
+    onClick={onClick}
+    className="flex items-center gap-3 cursor-pointer select-none"
+  >
+    <Image
+      src={IMAGES.LOGO}
+      alt="CV Builder"
+      width={100}
+      height={40}
+      priority
+      className="h-10 w-auto"
+    />
+  </div>
+);
+
+const Avatar = ({
+  src,
+  alt,
+  onClick,
+}: {
+  src: string;
+  alt: string;
+  onClick: () => void;
+}) => {
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => setImgSrc(src), [src]);
+
+  return (
+    <div style={styles.avatarContainer} onClick={onClick}>
+      <Image
+        src={imgSrc}
+        alt={alt}
+        width={44}
+        height={44}
+        className="object-cover"
+        onError={() => setImgSrc(IMAGES.DEFAULT_AVATAR)}
+      />
+    </div>
+  );
+};
+
+const LoginButton = ({ onClick }: { onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className="px-5 py-2 font-semibold text-emerald-400 transition-all hover:text-emerald-300 hover:underline underline-offset-4"
+  >
+    Log in
+  </button>
+);
+
+const Dropdown = ({
+  onProfile,
+  onSettings,
+  onLogout,
+}: {
+  onProfile: () => void;
+  onSettings: () => void;
+  onLogout: () => void;
+}) => (
+  <div style={styles.dropdown}>
+    <button style={styles.dropdownItem} onClick={onProfile}>
+      Profile
+    </button>
+    <button style={styles.dropdownItem} onClick={onSettings}>
+      Settings
+    </button>
+    <div className="my-1 h-px bg-gray-200" />
+    <button style={styles.dropdownItem} onClick={onLogout}>
+      Logout
+    </button>
+  </div>
+);
+
+/* -------------------------------- MAIN -------------------------------- */
+
 export default function AppHeader() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState<{ name: string; picture: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bottomOverlayOpen, setBottomOverlayOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMobile();
   const router = useRouter();
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -558,87 +366,66 @@ export default function AppHeader() {
   useEffect(() => {
     setLoggedIn(isLoggedIn());
     setUser(getUser());
-    
-    // Check if mobile on mount and resize
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= MOBILE_BREAKPOINT);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
         setDropdownOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    setLoggedIn(false);
-    setUser(null);
-    setDropdownOpen(false);
-    setBottomOverlayOpen(false);
-    router.replace(ROUTES.LOGIN);
-  };
-
-  // Check if home tab is active
-  const isHomeActive = pathname === ROUTES.HOME;
-
   return (
     <>
-      <header style={styles.header}>
-        <Logo onClick={() => router.push(ROUTES.HOME)} />
+      {/* HEADER */}
 
-        {!isMobile && (
-          <div style={styles.userSection}>
-            {loggedIn && user ? (
-              <div ref={dropdownRef}>
-                <Avatar
-                  src={user.picture}
-                  alt={user.name}
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                />
-                {dropdownOpen && (
-                  <Dropdown
-                    onLogout={() => setShowLogoutConfirm(true)}
-                    onSettings={() => {
-                      setDropdownOpen(false);
-                      router.push(ROUTES.SETTINGS);
-                    }}
-                    onProfile={() => {
-                      setDropdownOpen(false);
-                      router.push(ROUTES.PROFILE);
-                    }}
-                  />
+      <header className="sticky top-0 z-40 border-b border-emerald-500/20 bg-emerald-950/60 backdrop-blur-lg">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <Logo onClick={() => router.push(ROUTES.HOME)} />
+
+            {!isMobile && (
+              <div style={styles.userSection} ref={dropdownRef}>
+                {loggedIn && user ? (
+                  <>
+                    <Avatar
+                      src={user.picture}
+                      alt={user.name}
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                    />
+                    {dropdownOpen && (
+                      <Dropdown
+                        onProfile={() => router.push(ROUTES.PROFILE)}
+                        onSettings={() => router.push(ROUTES.SETTINGS)}
+                        onLogout={() => setShowLogoutConfirm(true)}
+                      />
+                    )}
+                  </>
+                ) : (
+                  pathname !== ROUTES.LOGIN && (
+                    <LoginButton onClick={() => router.push(ROUTES.LOGIN)} />
+                  )
                 )}
               </div>
-            ) : (
-              pathname !== ROUTES.LOGIN && (
-                <LoginButton onClick={() => router.push(ROUTES.LOGIN)} />
-              )
             )}
           </div>
-        )}
+        </div>
       </header>
 
-      {/* Bottom navbar for mobile */}
+      {/* MOBILE BOTTOM NAVBAR */}
+
       {isMobile && (
         <>
           <BottomNavbar
             onHomeClick={() => router.push(ROUTES.HOME)}
             onMoreClick={() => setBottomOverlayOpen(true)}
-            isHomeActive={isHomeActive}
+            onLoginClick={() => router.push(ROUTES.LOGIN)}
+            isHomeActive={pathname === ROUTES.HOME}
             isLoggedIn={loggedIn}
           />
-          
+
           {bottomOverlayOpen && (
             <>
               {loggedIn ? (
@@ -671,18 +458,19 @@ export default function AppHeader() {
         </>
       )}
 
+      {/* LOGOUT CONFIRM */}
       <ConfirmModal
         open={showLogoutConfirm}
         title="Logout"
-        description="Are you sure you want to logout from your account?"
+        description="Are you sure you want to logout?"
         confirmText="Logout"
         cancelText="Cancel"
         onCancel={() => setShowLogoutConfirm(false)}
         onConfirm={() => {
-          setShowLogoutConfirm(false);
-          handleLogout();
+          logout();
+          router.replace(ROUTES.LOGIN);
         }}
       />
     </>
   );
-};
+}
