@@ -42,19 +42,13 @@ export default function GoogleLoginButton({ disabled }: GoogleLoginButtonProps) 
     <button
       onClick={handleGoogleLogin}
       disabled={isLoading || disabled}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        ...styles.button,
-        ...(isLoading || disabled ? styles.buttonDisabled : isHovered ? styles.buttonHover : {}),
-      }}
+      className="w-full h-12 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl text-gray-100 font-medium transition-all duration-200 hover:bg-gray-700/50 hover:border-gray-600/50 hover:shadow-lg hover:shadow-black/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 group"
     >
-      <div style={styles.buttonContent}>
+      <div className="w-5 h-5 flex items-center justify-center">
         <svg
           width="20"
           height="20"
           viewBox="0 0 24 24"
-          style={styles.icon}
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -74,10 +68,10 @@ export default function GoogleLoginButton({ disabled }: GoogleLoginButtonProps) 
             fill="#EA4335"
           />
         </svg>
-        <span style={styles.buttonText}>
-          {isLoading ? "Signing in..." : "Sign in with Google"}
-        </span>
       </div>
+      <span className="text-gray-300 group-hover:text-gray-100 transition-colors">
+        {isLoading ? "Signing in..." : "Sign in with Google"}
+      </span>
     </button>
   );
 }
@@ -85,6 +79,7 @@ export default function GoogleLoginButton({ disabled }: GoogleLoginButtonProps) 
 /* ================= STYLES ================= */
 
 const styles: Record<string, React.CSSProperties> = {
+  // Removed styles as they are now applied using Tailwind CSS classes
   button: {
     width: "100%",
     height: "50px",

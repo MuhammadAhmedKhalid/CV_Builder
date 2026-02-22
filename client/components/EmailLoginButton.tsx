@@ -42,41 +42,34 @@ export default function EmailLoginButton({ disabled }: EmailLoginButtonProps) {
     <button
       onClick={handleEmailLogin}
       disabled={isLoading || disabled}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        ...styles.button,
-        ...(isLoading || disabled ? styles.buttonDisabled : isHovered ? styles.buttonHover : {}),
-      }}
+      className="w-full h-12 bg-emerald-600/80 backdrop-blur-sm border border-emerald-500/50 rounded-xl text-emerald-50 font-medium transition-all duration-200 hover:bg-emerald-500/80 hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 group"
     >
-      <div style={styles.buttonContent}>
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={styles.icon}
-        >
-          <path
-            d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M22 6L12 13L2 6"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span style={styles.buttonText}>
-          {isLoading ? "Signing in..." : "Sign in with Email"}
-        </span>
-      </div>
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="text-emerald-200 group-hover:text-emerald-100 transition-colors flex-shrink-0"
+      >
+        <path
+          d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M22 6L12 13L2 6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span className="text-emerald-50/90 group-hover:text-emerald-50 transition-colors">
+        {isLoading ? "Signing in..." : "Sign in with Email"}
+      </span>
     </button>
   );
 }
