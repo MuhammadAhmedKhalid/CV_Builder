@@ -1,13 +1,11 @@
 "use client";
 
-import AppHeader from "@/components/AppHeader";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
 import EmailLoginButton from "@/components/EmailLoginButton";
 import { isLoggedIn, setUser } from "@/utils/auth";
 import { setToken } from "@/utils/cookies";
-import * as COLORS from "@/lib/colors";
 import { ROUTES } from "@/lib/paths";
 import { FaExclamationCircle } from 'react-icons/fa';
 
@@ -96,12 +94,17 @@ export default function LoginPage() {
   // Early return for loading or auth checking
   if (isCheckingAuth || isLoading) {
     return (
-      <div style={styles.page}>
-        <AppHeader />
-        <div style={styles.container}>
-          <div style={styles.loadingSpinner}>
-            <div style={styles.spinner}></div>
-            <div style={styles.loadingText}>Authenticating...</div>
+      <div className="min-h-screen bg-gradient-to-b from-emerald-950 via-gray-950 to-gray-950 relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
+        
+        <div className="flex items-center justify-center h-screen">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-2xl shadow-black/30">
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+              <div className="text-emerald-100 font-medium">Authenticating...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -109,180 +112,55 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={styles.page}>
-      <AppHeader />
-
-      <div style={styles.container}>
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <h1 style={styles.title}>Welcome Back</h1>
-            <p style={styles.subtitle}>
+    <div className="min-h-screen bg-gradient-to-b from-emerald-950 via-gray-950 to-gray-950 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
+      
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-3">
+              Welcome Back
+            </h1>
+            <p className="text-emerald-200/70">
               Sign in to continue building your CV
             </p>
           </div>
 
           {error && (
-            <div style={styles.errorBox}>
-              <div style={styles.errorIcon}>
-                <FaExclamationCircle size={20} color={COLORS.ERROR_TEXT} />
-              </div>
-              <div style={styles.errorContent}>
-                <div style={styles.errorTitle}>Authentication Error</div>
-                <div style={styles.errorMessage}>{error}</div>
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <FaExclamationCircle size={20} className="text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-red-300 font-semibold text-sm mb-1">Authentication Error</div>
+                  <div className="text-red-200/80 text-sm">{error}</div>
+                </div>
               </div>
             </div>
           )}
 
-          <div style={styles.buttonContainer}>
-            <GoogleLoginButton
-              disabled={isLoading}
-            />
+          <div className="bg-white/8 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-2xl shadow-black/30">
+            <div className="space-y-4">
+              <GoogleLoginButton
+                disabled={isLoading}
+              />
 
-            <div style={styles.dividerContainer}>
-              <div style={styles.dividerLine}></div>
-              <span style={styles.dividerText}>OR</span>
-              <div style={styles.dividerLine}></div>
+              <div className="flex items-center gap-4 my-6">
+                <div className="flex-1 h-px bg-emerald-500/30" />
+                <span className="text-emerald-300/60 text-xs font-medium px-2">OR</span>
+                <div className="flex-1 h-px bg-emerald-500/30" />
+              </div>
+
+              <EmailLoginButton
+                disabled={isLoading}
+              />
             </div>
-
-            <EmailLoginButton
-              disabled={isLoading}
-            />
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-/* ================= STYLES ================= */
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    backgroundColor: COLORS.LIGHT_GRAY,
-  },
-
-  container: {
-    height: "calc(100vh - 64px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "16px",
-  },
-
-  card: {
-    backgroundColor: COLORS.WHITE,
-    width: "100%",
-    maxWidth: "420px",
-    padding: "32px",
-    borderRadius: "16px",
-    boxShadow: `0 10px 30px ${COLORS.SHADOW_MEDIUM}`,
-    border: `1px solid ${COLORS.SECONDARY}`,
-    textAlign: "center",
-  },
-
-  title: {
-    fontSize: "28px",
-    fontWeight: 700,
-    color: COLORS.PRIMARY_DARK,
-    marginBottom: "8px",
-  },
-
-  subtitle: {
-    fontSize: "14px",
-    color: COLORS.PRIMARY,
-    marginBottom: "24px",
-  },
-
-  errorBox: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '12px',
-    marginBottom: '16px',
-    padding: '12px',
-    backgroundColor: COLORS.ERROR_BG,
-    color: COLORS.ERROR_TEXT,
-    borderRadius: '8px',
-    border: `1px solid ${COLORS.ERROR_TEXT}20`,
-    textAlign: 'left',
-  },
-
-  errorIcon: {
-    flexShrink: 0,
-    marginTop: '2px',
-  },
-
-  errorContent: {
-    flex: 1,
-  },
-
-  errorTitle: {
-    fontSize: '16px',
-    fontWeight: 600,
-    marginBottom: '4px',
-  },
-
-  errorMessage: {
-    fontSize: '14px',
-    lineHeight: 1.4,
-    opacity: 0.9,
-  },
-
-  dividerContainer: {
-    display: "flex",
-    alignItems: "center",
-    margin: "16px 0",
-    gap: "12px",
-  },
-
-  dividerLine: {
-    flex: 1,
-    height: "1px",
-    backgroundColor: COLORS.BORDER_PRIMARY,
-  },
-
-  dividerText: {
-    fontSize: "12px",
-    color: COLORS.PRIMARY,
-    fontWeight: "500",
-    padding: "0 8px",
-  },
-
-  cardHeader: {
-    marginBottom: "24px",
-  },
-
-  buttonContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-
-  loadingSpinner: {
-    backgroundColor: COLORS.WHITE,
-    padding: "20px 40px",
-    borderRadius: "8px",
-    boxShadow: `0 4px 12px ${COLORS.SHADOW_MEDIUM}`,
-    fontSize: "16px",
-    fontWeight: "500",
-    color: COLORS.PRIMARY_DARK,
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-
-  spinner: {
-    width: "20px",
-    height: "20px",
-    border: `2px solid ${COLORS.PRIMARY}`,
-    borderTop: "2px solid transparent",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite",
-  },
-
-  loadingText: {
-    fontSize: "16px",
-    fontWeight: "500",
-    color: COLORS.PRIMARY_DARK,
-  },
-};
