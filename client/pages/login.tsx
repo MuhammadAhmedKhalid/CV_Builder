@@ -113,18 +113,24 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-950 via-gray-950 to-gray-950 relative overflow-hidden">
-      {/* Background decorations */}
+      {/* Original background decorations */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
       
-      <div className="flex items-center justify-center min-h-screen px-4">
+      <div className="relative flex items-center justify-center min-h-screen px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-3">
+          {/* Logo/Brand section */}
+          <div className="text-center mb-10">
+            <img 
+              src="/images/cv_builder_icon.png" 
+              alt="CV Builder" 
+              className="w-32 h-32 object-contain mx-auto"
+            />
+            <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
               Welcome Back
             </h1>
-            <p className="text-emerald-200/70">
-              Sign in to continue building your CV
+            <p className="text-emerald-200/70 text-lg">
+              Sign in to continue
             </p>
           </div>
 
@@ -142,21 +148,29 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* Enhanced login form container */}
           <div className="bg-white/8 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-2xl shadow-black/30">
             <div className="space-y-4">
               <GoogleLoginButton
                 disabled={isLoading}
               />
 
-              <div className="flex items-center gap-4 my-6">
-                <div className="flex-1 h-px bg-emerald-500/30" />
-                <span className="text-emerald-300/60 text-xs font-medium px-2">OR</span>
-                <div className="flex-1 h-px bg-emerald-500/30" />
+              <div className="flex items-center gap-4 my-8">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+                <span className="text-emerald-300/60 text-sm font-medium px-3 tracking-wide">OR</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
               </div>
 
               <EmailLoginButton
                 disabled={isLoading}
               />
+            </div>
+            
+            {/* Additional info */}
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <p className="text-center text-emerald-200/50 text-sm">
+                By signing in, you agree to our Terms of Service and Privacy Policy
+              </p>
             </div>
           </div>
         </div>
